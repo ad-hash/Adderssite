@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adders OS · Adnaan Ghanchi</title>
+<meta name="description" content="Adnaan Ghanchi. Recovering doctor, antibiotics by day, small apps by night.">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Crect width='8' height='8' fill='%23111'/%3E%3Cpath d='M3 2h2v1H3zM2 3h1v4H2zM5 3h1v4H5zM3 5h2v1H3z' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f5f3ed;
+    --dots:#d8d4ca;
+    --win:#fbfaf6;
+    --ink:#111;
+    --muted:#5c5852;
+    --rust:#9a4a23;
+    /* theme accent: shadow colour + link ink (fire default, from the workout app) */
+    --acc:#ff5a1f; --acc-ink:#c2261c;
+    --li:#0a66c2;
+    --armor-navy:#0a2563; --armor-orange:#ff6a14; --armor-teal:#14b8a6;
+    --app-red:#e8262e;
+    --bar:#fff; --tile:#fff;
+    --pixel:"Silkscreen", "Courier New", monospace;
+    --mono:"Space Mono", ui-monospace, Menlo, monospace;
+  }
+  [data-theme="water"]{ --acc:#3b6cff; --acc-ink:#2251d1; }
+  [data-theme="grass"]{ --acc:#2fb35a; --acc-ink:#1d7a3c; }
+  [data-theme="electric"]{ --acc:#ffc700; --acc-ink:#8f6400; }
+
+  /* dark mode: same OS, lights off */
+  [data-mode="dark"]{
+    --paper:#12100e; --dots:#2c2825; --win:#1b1816; --ink:#efe9df; --muted:#a59d93; --rust:#e3925f;
+    --bar:#1b1816; --tile:#24201d; --acc-ink:#ff7a45;
+  }
+  [data-mode="dark"][data-theme="water"]{ --acc-ink:#7d9bff; }
+  [data-mode="dark"][data-theme="grass"]{ --acc-ink:#4ccc76; }
+  [data-mode="dark"][data-theme="electric"]{ --acc-ink:#ffd23f; }
+  [data-mode="dark"] .armor{ color:#6f8fe0; }
+
+  *{ box-sizing:border-box; }
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    margin:0; color:var(--ink); font-family:var(--mono); font-size:15px; line-height:1.6;
+    background-color:var(--paper);
+    background-image:radial-gradient(var(--dots) 1px, transparent 1.3px);
+    background-size:9px 9px;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{ color:var(--acc-ink); text-decoration:none; }
+  a:hover{ text-decoration:underline; text-underline-offset:3px; }
+  ::selection{ background:var(--ink); color:#fff; }
+
+  /* ---------- menu bar ---------- */
+  .menubar{
+    position:sticky; top:0; z-index:10;
+    display:flex; align-items:center; gap:12px;
+    height:52px; padding:0 12px; background:var(--bar); border-bottom:3px solid var(--ink);
+  }
+  .logo{ height:30px; padding:0 6px; background:var(--ink); color:var(--bar); display:grid; place-items:center; font-family:var(--pixel); font-weight:700; font-size:14px; letter-spacing:.06em; }
+  .osname{ white-space:nowrap; font-family:var(--pixel); font-size:15px; letter-spacing:.16em; text-transform:uppercase; }
+  .grow{ flex:1; }
+  .els{ display:flex; gap:0; }
+  .el{ width:30px; height:30px; display:grid; place-items:center; background:none; border:0; padding:0; color:#aaa59c; cursor:pointer; }
+  .el svg{ width:17px; height:17px; }
+  .el:hover{ color:var(--ink); }
+  .el[aria-pressed="true"]{ color:var(--acc-ink); }
+  .el:focus-visible{ outline:2px solid var(--ink); }
+  .sep{ width:2px; height:20px; background:var(--ink); opacity:.25; margin:0 4px; }
+  .win{ transition:box-shadow .25s; }
+  .jiggle{ animation:jig .3s; }
+  @keyframes jig{ 30%{ transform:rotate(-1.2deg); } 70%{ transform:rotate(1deg); } }
+  .ver{ font-family:var(--pixel); font-size:12px; letter-spacing:.1em; border:2px solid var(--ink); padding:3px 9px; }
+
+  /* ---------- hero ---------- */
+  .hero{ text-align:center; padding:34px 18px 10px; }
+  .welcome{ font-family:var(--mono); font-size:15px; letter-spacing:.28em; color:var(--rust); text-transform:uppercase; margin:0; }
+  h1{ font-family:var(--pixel); font-weight:400; font-size:clamp(34px,10vw,64px); letter-spacing:.14em; line-height:1.1; margin:10px 0 18px; text-transform:uppercase; }
+  .tagline{ max-width:34ch; margin:0 auto; font-size:clamp(15px,3.6vw,17px); letter-spacing:.03em; }
+
+  /* ---------- windows ---------- */
+  .desk{ display:flex; flex-direction:column; align-items:center; gap:58px; padding:44px 18px 70px; }
+  .item{ width:min(330px, 84vw); text-align:center; }
+  .item.wide{ width:min(460px, 88vw); }
+  .win{
+    --sh:var(--ink);
+    position:relative; background:var(--win); border:3px solid var(--ink);
+    box-shadow:14px 14px 0 var(--sh); text-align:left;
+  }
+  .bar{
+    position:relative; height:28px; border-bottom:3px solid var(--ink); background:var(--win);
+    display:flex; align-items:center;
+  }
+  .bar::before{
+    content:""; position:absolute; inset:4px 3px;
+    background:repeating-linear-gradient(180deg, var(--ink) 0 2px, transparent 2px 4px);
+  }
+  .close{ position:relative; width:16px; height:16px; margin-left:10px; background:var(--win); border:3px solid var(--ink); box-shadow:0 0 0 3px var(--win); }
+  .wname{ position:relative; margin:0 auto; padding:0 10px; background:var(--win); font-family:var(--pixel); font-size:12px; letter-spacing:.14em; text-transform:uppercase; }
+  .pane{ padding:14px; }
+  .pane canvas{ display:block; width:100%; height:auto; image-rendering:pixelated; image-rendering:crisp-edges; }
+  .label{ font-family:var(--pixel); font-weight:700; font-size:clamp(17px,4.6vw,21px); letter-spacing:.14em; text-transform:uppercase; margin:20px 0 2px; line-height:1.25; }
+  .cap{ font-style:italic; color:var(--muted); margin:0; }
+  .go{ display:inline-block; margin-top:10px; font-size:16px; }
+
+  .w-me{ --sh:var(--acc); }
+  .w-armor{ --sh:var(--armor-orange); }
+  .w-gym{ --sh:var(--app-red); }
+
+  .armor{ color:var(--armor-navy); }
+  .armor .o{ color:var(--armor-teal); }
+  .armor-u{ box-shadow:inset 0 -4px 0 var(--armor-orange); }
+
+  /* readme */
+  .readme{ padding:18px 18px 20px; font-size:14.5px; }
+  .readme p{ margin:0 0 12px; }
+  .readme h2{ font-family:var(--pixel); font-weight:700; font-size:14px; letter-spacing:.14em; margin:18px 0 8px; text-transform:uppercase; }
+  .readme ol{ list-style:none; margin:0; padding:0; }
+  .readme li{ display:grid; grid-template-columns:2.2em 1fr; margin-bottom:6px; }
+  .readme li b{ font-weight:700; }
+  .readme li span.n{ color:var(--acc-ink); font-weight:700; }
+  .readme .dim{ color:var(--muted); }
+
+  /* links: icon tiles */
+  .tiles{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; padding:16px; }
+  .tile{
+    display:flex; flex-direction:column; align-items:center; gap:8px; padding:14px 6px 10px;
+    border:2px solid var(--ink); background:var(--tile); color:var(--ink); text-decoration:none !important;
+    box-shadow:4px 4px 0 var(--ink); transition:transform .08s, box-shadow .08s;
+  }
+  .tile:hover{ transform:translate(2px,2px); box-shadow:2px 2px 0 var(--ink); }
+  .tile:active{ transform:translate(4px,4px); box-shadow:none; }
+  .tile:focus-visible{ outline:3px solid var(--acc); outline-offset:2px; }
+  .tile .ic{ width:40px; height:40px; display:grid; place-items:center; font-family:var(--pixel); font-weight:700; font-size:17px; color:var(--win); background:var(--ink); }
+  .tile.li .ic, .tile.gym .ic{ color:#fff; }
+  .tile.li .ic{ background:var(--li); }
+  .tile.gym .ic{ background:var(--app-red); }
+  .tile .t{ font-family:var(--pixel); font-size:11px; letter-spacing:.1em; text-transform:uppercase; }
+  .email-line{ padding:0 16px 16px; font-size:13px; color:var(--muted); text-align:center; word-break:break-all; }
+
+  footer{ text-align:center; padding:0 18px 40px; font-family:var(--pixel); font-size:11px; letter-spacing:.14em; color:var(--muted); text-transform:uppercase; }
+
+  /* on wide screens, scatter the windows like a desktop */
+  @media (min-width:860px){
+    .desk{ gap:70px; }
+    .item.l{ transform:translateX(-150px); }
+    .item.r{ transform:translateX(150px); }
+  }
+  @media (max-width:440px){ .osname{ display:none; } }
+  @media (max-width:370px){ .ver{ display:none; } }
+  @media (prefers-reduced-motion:reduce){ .jiggle{ animation:none; } .win{ transition:none; } }
+</style>
+</head>
+<body>
+
+<header class="menubar">
+  <div class="logo" aria-hidden="true">AG</div>
+  <span class="osname">Adders OS</span>
+  <span class="grow"></span>
+  <div class="els" role="group" aria-label="Colour theme">
+    <button class="el" data-theme="fire" aria-label="Fire theme" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></button>
+    <button class="el" data-theme="water" aria-label="Water theme" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg></button>
+    <button class="el" data-theme="grass" aria-label="Grass theme" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg></button>
+    <button class="el" data-theme="electric" aria-label="Electric theme" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></button>
+  </div>
+  <span class="sep" aria-hidden="true"></span>
+  <button class="el" id="shuffle" aria-label="Shuffle colours" title="Shuffle colours"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect width="12" height="12" x="2" y="10" rx="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg></button>
+  <button class="el" id="mode" aria-label="Dark mode" aria-pressed="false" title="Dark mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path class="moon" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/><g class="sun" style="display:none"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"/></g></svg></button>
+  <span class="ver">v1.0</span>
+</header>
+
+<section class="hero">
+  <p class="welcome">Welcome to</p>
+  <h1>Adders OS</h1>
+  <p class="tagline">the two-tab life of Adnaan Ghanchi: antibiotics by day, small apps by night</p>
+</section>
+
+<main class="desk">
+
+  <!-- ME.EXE : drop a photo named me.jpg next to this file and it gets dithered automatically -->
+  <div class="item">
+    <div class="win w-me shuffle">
+      <div class="bar"><span class="close"></span><span class="wname">me.exe</span></div>
+      <div class="pane"><canvas id="cv-me" width="120" height="140" role="img" aria-label="Pixel portrait"></canvas></div>
+    </div>
+    <div class="label">Adnaan Ghanchi</div>
+    <p class="cap">(recovering doctor. mostly recovered.)</p>
+    <a class="go" href="#readme">read me &#9662;</a>
+  </div>
+
+  <!-- README.TXT -->
+  <div class="item wide l" id="readme">
+    <div class="win shuffle">
+      <div class="bar"><span class="close"></span><span class="wname">readme.txt</span></div>
+      <div class="readme">
+        <p>Did ICU through the pandemic and GP training, then swapped the stethoscope for policy papers.</p>
+        <p>Now I work on keeping antibiotics working. They're more fragile than you'd think. On weekends I build small, slightly unnecessary apps.</p>
+        <h2>Now</h2>
+        <ol>
+          <li><span class="n">01</span><span><b>pestering brussels</b> <span class="dim">about antibiotics, mostly politely</span></span></li>
+          <li><span class="n">02</span><span><b>building apps</b> <span class="dim">started with a workout timer, scope creep pending</span></span></li>
+          <li><span class="n">03</span><span><b>chasing round 12</b> <span class="dim">of cindy. the pull-ups are the problem</span></span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARMOR.EXE -->
+  <div class="item r">
+    <div class="win w-armor">
+      <div class="bar"><span class="close"></span><span class="wname">armor.exe</span></div>
+      <div class="pane"><canvas id="cv-armor" width="120" height="120" role="img" aria-label="Pixel petri dish"></canvas></div>
+    </div>
+    <div class="label"><span class="armor armor-u">ARM<span class="o">o</span>R</span></div>
+    <p class="cap">(co-director. day job. keeping the drugs working.)</p>
+  </div>
+
+  <!-- WORKOUT.EXE -->
+  <div class="item l">
+    <div class="win w-gym shuffle">
+      <div class="bar"><span class="close"></span><span class="wname">workout.exe</span></div>
+      <div class="pane"><canvas id="cv-gym" width="120" height="120" role="img" aria-label="Pixel kettlebell"></canvas></div>
+    </div>
+    <div class="label">20 Min Circuit</div>
+    <p class="cap">(cindy and daily reps. mild suffering.)</p>
+    <!-- EDIT: workout app URL -->
+    <a class="go" href="https://workout.adders.party">open &#9656;</a>
+  </div>
+
+  <!-- LINKS -->
+  <div class="item wide">
+    <div class="win shuffle">
+      <div class="bar"><span class="close"></span><span class="wname">links</span></div>
+      <nav class="tiles" aria-label="Links">
+        <!-- EDIT: replace with your LinkedIn profile URL -->
+        <a class="tile li" href="https://www.linkedin.com/in/YOUR-LINKEDIN-HANDLE"><span class="ic">in</span><span class="t">LinkedIn</span></a>
+        <a class="tile" href="mailto:adnaan.ghanchi@armoramr.org"><span class="ic">&#9993;</span><span class="t">Email</span></a>
+        <a class="tile gym" href="https://workout.adders.party"><span class="ic">&#9650;</span><span class="t">Workout</span></a>
+      </nav>
+      <div class="email-line">adnaan.ghanchi@armoramr.org</div>
+    </div>
+  </div>
+
+</main>
+
+<footer>adders.party &middot; built on a saturday</footer>
+
+<script>
+(function(){
+  var root = document.documentElement;
+
+  /* ---------- theme switcher ---------- */
+  var THEMES = ['fire','water','grass','electric'];
+  var btns = document.querySelectorAll('.el[data-theme]');
+  function setTheme(t){
+    if (THEMES.indexOf(t) < 0) t = 'fire';
+    if (t === 'fire') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', t);
+    btns.forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.theme === t ? 'true' : 'false'); });
+    try { localStorage.setItem('adders-theme', t); } catch(e){}
+  }
+  var saved = 'fire';
+  try { saved = localStorage.getItem('adders-theme') || 'fire'; } catch(e){}
+  setTheme(saved);
+  btns.forEach(function(b){ b.addEventListener('click', function(){ setTheme(b.dataset.theme); }); });
+
+  /* ---------- dithering ---------- */
+  function hex(h){ return [parseInt(h.substr(1,2),16), parseInt(h.substr(3,2),16), parseInt(h.substr(5,2),16)]; }
+  var PAPER = hex('#fbfaf6');
+  function setPaper(h){ PAPER = hex(h); }
+
+  // 1-bit Floyd-Steinberg in a chosen ink colour
+  function dither1(canvas, draw, inkHex){
+    var w = canvas.width, h = canvas.height;
+    var off = document.createElement('canvas'); off.width = w; off.height = h;
+    var o = off.getContext('2d');
+    o.fillStyle = '#fff'; o.fillRect(0,0,w,h);
+    draw(o, w, h);
+    var src = o.getImageData(0,0,w,h).data, g = new Float32Array(w*h), i;
+    for (i = 0; i < w*h; i++) g[i] = src[i*4]*.299 + src[i*4+1]*.587 + src[i*4+2]*.114;
+    for (var y = 0; y < h; y++) for (var x = 0; x < w; x++){
+      i = y*w + x; var old = g[i], nw = old < 128 ? 0 : 255, err = old - nw; g[i] = nw;
+      if (x+1 < w) g[i+1] += err*7/16;
+      if (y+1 < h){ if (x > 0) g[i+w-1] += err*3/16; g[i+w] += err*5/16; if (x+1 < w) g[i+w+1] += err/16; }
+    }
+    var ink = hex(inkHex), ctx = canvas.getContext('2d'), out = ctx.createImageData(w,h);
+    for (i = 0; i < w*h; i++){ var c = g[i] < 128 ? ink : PAPER; out.data[i*4]=c[0]; out.data[i*4+1]=c[1]; out.data[i*4+2]=c[2]; out.data[i*4+3]=255; }
+    ctx.putImageData(out,0,0);
+  }
+
+  // colour dither for a real photo (per-channel, 2 levels, like the reference)
+  function ditherPhoto(canvas, img){
+    var w = canvas.width, h = canvas.height;
+    var off = document.createElement('canvas'); off.width = w; off.height = h;
+    var o = off.getContext('2d');
+    o.fillStyle = '#ffffff'; o.fillRect(0,0,w,h);
+    var r = Math.max(w/img.width, h/img.height), dw = img.width*r, dh = img.height*r;
+    o.drawImage(img, (w-dw)/2, (h-dh)/2, dw, dh);
+    var d = o.getImageData(0,0,w,h), a = new Float32Array(d.data.length), i, c;
+    for (i = 0; i < a.length; i++) a[i] = d.data[i];
+    for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) for (c = 0; c < 3; c++){
+      i = (y*w + x)*4 + c; var old = a[i], nw = old < 128 ? 0 : 255, err = old - nw; a[i] = nw;
+      if (x+1 < w) a[i+4] += err*7/16;
+      if (y+1 < h){ if (x > 0) a[i+w*4-4] += err*3/16; a[i+w*4] += err*5/16; if (x+1 < w) a[i+w*4+4] += err/16; }
+    }
+    for (i = 0; i < a.length; i += 4){
+      var white = a[i] > 128 && a[i+1] > 128 && a[i+2] > 128;
+      d.data[i]   = white ? PAPER[0] : a[i];
+      d.data[i+1] = white ? PAPER[1] : a[i+1];
+      d.data[i+2] = white ? PAPER[2] : a[i+2];
+      d.data[i+3] = 255;
+    }
+    canvas.getContext('2d').putImageData(d,0,0);
+  }
+
+  /* ---------- the drawings (grey shapes, then dithered) ---------- */
+  function shade(o, x, y, r, light, dark, lx, ly){
+    var g = o.createRadialGradient(x + r*lx, y + r*ly, r*.08, x, y, r);
+    g.addColorStop(0, light); g.addColorStop(1, dark); return g;
+  }
+
+  // capsule: placeholder portrait until me.jpg exists
+  function drawCapsule(o, w, h){
+    o.fillStyle = 'rgb(200,200,200)'; o.beginPath(); o.ellipse(w/2, h*.86, w*.3, h*.035, 0, 0, Math.PI*2); o.fill();
+    o.save(); o.translate(w/2, h*.48); o.rotate(-0.62);
+    var L = h*.36, R = w*.17;
+    // dark half
+    o.beginPath(); o.moveTo(0, -R); o.lineTo(-L+R, -R); o.arc(-L+R, 0, R, -Math.PI/2, Math.PI/2, true); o.lineTo(0, R); o.closePath();
+    var g1 = o.createLinearGradient(0, -R, 0, R); g1.addColorStop(0,'rgb(120,120,120)'); g1.addColorStop(.35,'rgb(70,70,70)'); g1.addColorStop(1,'rgb(15,15,15)');
+    o.fillStyle = g1; o.fill();
+    // light half
+    o.beginPath(); o.moveTo(0, -R); o.lineTo(L-R, -R); o.arc(L-R, 0, R, -Math.PI/2, Math.PI/2); o.lineTo(0, R); o.closePath();
+    var g2 = o.createLinearGradient(0, -R, 0, R); g2.addColorStop(0,'rgb(250,250,250)'); g2.addColorStop(.4,'rgb(205,205,205)'); g2.addColorStop(1,'rgb(95,95,95)');
+    o.fillStyle = g2; o.fill();
+    o.fillStyle = 'rgb(20,20,20)'; o.fillRect(-1, -R, 2, R*2);
+    // highlight
+    o.fillStyle = 'rgba(255,255,255,.9)'; o.fillRect(-L*.6, -R*.62, L*.42, R*.16); o.fillRect(L*.12, -R*.62, L*.5, R*.16);
+    o.restore();
+  }
+
+  // petri dish with colonies and a zone of inhibition round an antibiotic disc
+  function drawPetri(o, w, h){
+    var cx = w/2, cy = h/2, R = w*.43;
+    o.fillStyle = shade(o, cx, cy, R, 'rgb(150,150,150)', 'rgb(40,40,40)', -.4, -.4);
+    o.beginPath(); o.arc(cx, cy, R, 0, Math.PI*2); o.fill();
+    o.fillStyle = shade(o, cx, cy, R*.9, 'rgb(235,235,235)', 'rgb(170,170,170)', -.35, -.35);
+    o.beginPath(); o.arc(cx, cy, R*.9, 0, Math.PI*2); o.fill();
+    var dx = cx + R*.22, dy = cy + R*.12, zone = R*.3;
+    var seed = 7; function rnd(){ seed = (seed*16807) % 2147483647; return seed/2147483647; }
+    for (var k = 0; k < 70; k++){
+      var a = rnd()*Math.PI*2, rr = Math.sqrt(rnd())*R*.82, x = cx + Math.cos(a)*rr, y = cy + Math.sin(a)*rr;
+      if (Math.hypot(x-dx, y-dy) < zone + 3) continue;
+      var s = 1.4 + rnd()*3.2;
+      o.fillStyle = shade(o, x, y, s, 'rgb(130,130,130)', 'rgb(10,10,10)', -.4, -.4);
+      o.beginPath(); o.arc(x, y, s, 0, Math.PI*2); o.fill();
+    }
+    o.fillStyle = 'rgb(252,252,252)'; o.beginPath(); o.arc(dx, dy, zone, 0, Math.PI*2); o.fill();
+    o.fillStyle = 'rgb(25,25,25)'; o.beginPath(); o.arc(dx, dy, R*.1, 0, Math.PI*2); o.fill();
+    o.fillStyle = 'rgb(255,255,255)'; o.beginPath(); o.arc(dx, dy, R*.06, 0, Math.PI*2); o.fill();
+    o.strokeStyle = 'rgba(255,255,255,.95)'; o.lineWidth = 2.5;
+    o.beginPath(); o.arc(cx, cy, R*.95, Math.PI*1.1, Math.PI*1.45); o.stroke();
+  }
+
+  // kettlebell
+  function drawKettlebell(o, w, h){
+    var cx = w/2, cy = h*.6, R = w*.29;
+    o.fillStyle = 'rgb(190,190,190)'; o.beginPath(); o.ellipse(cx, h*.9, R*1.05, h*.035, 0, 0, Math.PI*2); o.fill();
+    o.lineWidth = w*.075; o.lineCap = 'round';
+    o.strokeStyle = 'rgb(35,35,35)'; o.beginPath(); o.ellipse(cx, cy - R*.85, R*.62, R*.7, 0, Math.PI*.98, Math.PI*2.02); o.stroke();
+    o.lineWidth = w*.025; o.strokeStyle = 'rgb(140,140,140)';
+    o.beginPath(); o.ellipse(cx, cy - R*.85, R*.62, R*.7, 0, Math.PI*1.15, Math.PI*1.45); o.stroke();
+    o.fillStyle = shade(o, cx, cy, R, 'rgb(215,215,215)', 'rgb(5,5,5)', -.45, -.45);
+    o.beginPath(); o.arc(cx, cy, R, 0, Math.PI*2); o.fill();
+    o.fillStyle = 'rgb(20,20,20)'; o.fillRect(cx - R*.55, cy + R*.82, R*1.1, R*.2);
+    o.fillStyle = 'rgba(255,255,255,.95)'; o.beginPath(); o.ellipse(cx - R*.42, cy - R*.42, R*.14, R*.08, -.7, 0, Math.PI*2); o.fill();
+  }
+
+  var me = document.getElementById('cv-me'), photo = null;
+  function render(){
+    var dark = root.getAttribute('data-mode') === 'dark';
+    setPaper(dark ? '#1b1816' : '#fbfaf6');
+    var ink = dark ? '#efe9df' : '#111111';
+    dither1(document.getElementById('cv-armor'), drawPetri, dark ? '#14b8a6' : '#0a2563');
+    dither1(document.getElementById('cv-gym'), drawKettlebell, ink);
+    if (photo) ditherPhoto(me, photo); else dither1(me, drawCapsule, ink);
+  }
+  var img = new Image();
+  img.onload = function(){ photo = img; render(); me.setAttribute('aria-label', 'Pixel portrait of Adnaan'); };
+  img.src = 'me.jpg';
+
+  /* ---------- dark mode ---------- */
+  var modeBtn = document.getElementById('mode');
+  function setMode(m){
+    var dark = m === 'dark';
+    if (dark) root.setAttribute('data-mode','dark'); else root.removeAttribute('data-mode');
+    modeBtn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+    modeBtn.querySelector('.moon').style.display = dark ? 'none' : '';
+    modeBtn.querySelector('.sun').style.display = dark ? '' : 'none';
+    try { localStorage.setItem('adders-mode', m); } catch(e){}
+    render();
+  }
+  var savedMode = null;
+  try { savedMode = localStorage.getItem('adders-mode'); } catch(e){}
+  if (!savedMode) savedMode = (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  setMode(savedMode);
+  modeBtn.addEventListener('click', function(){ setMode(root.getAttribute('data-mode') === 'dark' ? 'light' : 'dark'); });
+
+  /* ---------- colour shuffler: new shadow colours on every roll ---------- */
+  var PALETTE = ['#ff5a1f','#3b6cff','#2fb35a','#ffc700','#e8262e','#a855f7','#14b8a6','#ff5fa2','var(--ink)'];
+  document.getElementById('shuffle').addEventListener('click', function(){
+    var pool = PALETTE.slice().sort(function(){ return Math.random() - .5; });
+    document.querySelectorAll('.win.shuffle').forEach(function(w, i){
+      w.style.setProperty('--sh', pool[i % pool.length]);
+      w.classList.remove('jiggle'); void w.offsetWidth; w.classList.add('jiggle');
+    });
+  });
+})();
+</script>
+</body>
+</html>
