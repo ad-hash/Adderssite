@@ -78,8 +78,17 @@
   [data-mode="dark"][data-bg="mac"] body{ background-image:conic-gradient(#221e1b 25%,transparent 0 50%,#221e1b 0 75%,transparent 0); }
   [data-bg="crt"] body{ background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.05) 0 1px,transparent 1px 4px); }
   [data-mode="dark"][data-bg="crt"] body{ background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 4px); }
-  [data-bg="sunset"] body{ background-image:linear-gradient(180deg,#f5f3ed 0%,#fbe3cf 45%,#f7c9d6 100%); background-attachment:fixed; }
-  [data-mode="dark"][data-bg="sunset"] body{ background-image:linear-gradient(180deg,#12100e 0%,#2a1517 50%,#1d1430 100%); }
+  [data-bg="dolphin"] body{ background-image:url(bg/dolphin.svg); background-size:240px 200px; }
+  [data-mode="dark"][data-bg="dolphin"] body{ background-image:url(bg/dolphin-dark.svg); }
+  [data-bg="epic"] body::before{ content:""; position:fixed; inset:0; z-index:-1; background:url(bg/epic.jpg) center/cover no-repeat; }
+  [data-mode="dark"][data-bg="epic"] body::before{ background:linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)), url(bg/epic.jpg) center/cover no-repeat; }
+  [data-bg="epic"]{ --paper:#2a1530; }
+  /* on the busy backgrounds, loose text gets a little paper plate so it stays readable */
+  [data-busy] .hero > *, [data-busy] .label, [data-busy] .cap, [data-busy] footer > :not(.ctrls){ display:table; margin-left:auto; margin-right:auto; background:var(--win); padding:2px 10px; border:2px solid var(--ink); }
+  [data-busy] .hero > *{ margin-bottom:8px; }
+  [data-busy] .cap{ margin-top:4px; }
+  [data-busy] .ctrls{ display:inline-flex; background:var(--win); border:2px solid var(--ink); padding:0 6px; }
+  [data-busy] footer{ display:block; }
   body{ transition:background-color .45s ease; }
   #recolour.spin svg{ animation:spin .5s ease; }
   #recolour[aria-expanded="true"]{ color:#f5f3ed; }
@@ -719,8 +728,10 @@
     ['graph','graph paper','linear-gradient(#cfc9bb 1px,transparent 1px) 0 0/5px 5px,linear-gradient(90deg,#cfc9bb 1px,#f5f3ed 1px) 0 0/5px 5px'],
     ['mac','mac desktop','conic-gradient(#bdb7aa 25%,#f5f3ed 0 50%,#bdb7aa 0 75%,#f5f3ed 0) 0 0/4px 4px'],
     ['crt','scanlines','repeating-linear-gradient(0deg,#cfc9bb 0 1px,#f5f3ed 1px 3px)'],
-    ['sunset','sunset fade','linear-gradient(180deg,#f5f3ed,#fbe3cf,#f7c9d6)']
+    ['dolphin','crazy dolphins','url(bg/dolphin.svg) 0 0/72px 60px'],
+    ['epic','epic painting','url(bg/epic.jpg) center/cover']
   ];
+  var BUSY = ['dolphin','epic'];
   var paperIdx = -1, savedBg = null;
   try { savedBg = localStorage.getItem('adders-bg'); } catch(e){}
   BGS.forEach(function(b, i){ if (b[0] === savedBg) paperIdx = i; });
@@ -735,6 +746,7 @@
   });
   function applyPaper(){
     root.setAttribute('data-bg', BGS[paperIdx][0]);
+    if (BUSY.indexOf(BGS[paperIdx][0]) > -1) root.setAttribute('data-busy',''); else root.removeAttribute('data-busy');
     grid.querySelectorAll('.bgitem').forEach(function(el){ el.setAttribute('aria-checked', +el.dataset.i === paperIdx ? 'true' : 'false'); });
   }
   function pick(i, remember){
