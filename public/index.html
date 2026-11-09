@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Adders OS · Adnaan Ghanchi</title>
-<meta name="description" content="Adnaan Ghanchi. Recovering doctor, antibiotics by day, small apps by night.">
+<meta name="description" content="Adnaan Ghanchi. Physician, entrepreneur and academic working on high-impact, neglected problems.">
 <meta name="theme-color" content="#ffffff">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Crect width='8' height='8' fill='%23111'/%3E%3Cpath d='M3 2h2v1H3zM2 3h1v4H2zM5 3h1v4H5zM3 5h2v1H3z' fill='%23fff'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -70,19 +70,18 @@
   .el[aria-pressed="true"]{ color:var(--acc-ink); }
   .el:focus-visible{ outline:2px solid var(--ink); }
   .sep{ width:2px; height:20px; background:var(--ink); opacity:.25; margin:0 4px; }
-  .win{ transition:box-shadow .25s; }
   .jiggle{ animation:jig .3s; }
   @keyframes jig{ 30%{ transform:rotate(-1.2deg); } 70%{ transform:rotate(1deg); } }
   .ver{ font-family:var(--pixel); font-size:12px; letter-spacing:.1em; border:2px solid var(--ink); padding:3px 9px; }
 
   /* ---------- hero ---------- */
-  .hero{ text-align:center; padding:34px 18px 10px; }
+  .hero{ text-align:center; padding:26px 18px 0; }
   .welcome{ font-family:var(--mono); font-size:15px; letter-spacing:.28em; color:var(--rust); text-transform:uppercase; margin:0; }
-  h1{ font-family:var(--pixel); font-weight:400; font-size:clamp(34px,10vw,64px); letter-spacing:.14em; line-height:1.1; margin:10px 0 18px; text-transform:uppercase; }
+  h1{ font-family:var(--pixel); font-weight:400; font-size:clamp(34px,10vw,64px); letter-spacing:.14em; line-height:1.1; margin:6px 0 12px; text-transform:uppercase; }
   .tagline{ max-width:34ch; margin:0 auto; font-size:clamp(15px,3.6vw,17px); letter-spacing:.03em; }
 
   /* ---------- windows ---------- */
-  .desk{ display:flex; flex-direction:column; align-items:center; gap:58px; padding:44px 18px 70px; }
+  .desk{ display:flex; flex-direction:column; align-items:center; gap:52px; padding:30px 18px 60px; }
   .item{ width:min(330px, 84vw); text-align:center; }
   .item.wide{ width:min(460px, 88vw); }
   .win{
@@ -102,13 +101,10 @@
   .wname{ position:relative; margin:0 auto; padding:0 10px; background:var(--win); font-family:var(--pixel); font-size:12px; letter-spacing:.14em; text-transform:uppercase; }
   .pane{ padding:14px; }
   .pane canvas{ display:block; width:100%; height:auto; image-rendering:pixelated; image-rendering:crisp-edges; }
-  .label{ font-family:var(--pixel); font-weight:700; font-size:clamp(17px,4.6vw,21px); letter-spacing:.14em; text-transform:uppercase; margin:20px 0 2px; line-height:1.25; }
+  .label{ font-family:var(--mono); font-weight:700; font-size:clamp(19px,5vw,22px); letter-spacing:-.01em; margin:20px 0 0; line-height:1.25; }
   .cap{ font-style:italic; color:var(--muted); margin:0; }
   .go{ display:inline-block; margin-top:10px; font-size:16px; }
 
-  .w-me{ --sh:var(--acc); }
-  .w-armor{ --sh:var(--armor-orange); }
-  .w-gym{ --sh:var(--app-red); }
 
   .armor{ color:var(--armor-navy); }
   .armor .o{ color:var(--armor-teal); }
@@ -117,7 +113,7 @@
   /* readme */
   .readme{ padding:18px 18px 20px; font-size:14.5px; }
   .readme p{ margin:0 0 12px; }
-  .readme h2{ font-family:var(--pixel); font-weight:700; font-size:14px; letter-spacing:.14em; margin:18px 0 8px; text-transform:uppercase; }
+  .readme h2{ font-family:var(--pixel); font-weight:700; font-size:13px; letter-spacing:.14em; margin:18px 0 8px; text-transform:uppercase; }
   .readme ol{ list-style:none; margin:0; padding:0; }
   .readme li{ display:grid; grid-template-columns:2.2em 1fr; margin-bottom:6px; }
   .readme li b{ font-weight:700; }
@@ -138,16 +134,151 @@
   .tile.li .ic, .tile.gym .ic{ color:#fff; }
   .tile.li .ic{ background:var(--li); }
   .tile.gym .ic{ background:var(--app-red); }
-  .tile .t{ font-family:var(--pixel); font-size:11px; letter-spacing:.1em; text-transform:uppercase; }
+  .tile .t{ font-family:var(--mono); font-weight:700; font-size:13px; }
   .email-line{ padding:0 16px 16px; font-size:13px; color:var(--muted); text-align:center; word-break:break-all; }
 
+  /* two small windows side by side */
+  .pair{ width:min(560px, 92vw); display:grid; grid-template-columns:1fr 1fr; gap:22px 26px; align-items:start; }
+  .pair .item{ width:auto; }
+  .pair .win{ box-shadow:9px 9px 0 var(--sh); }
+  .pair .bar{ height:24px; }
+  .pair .close{ width:13px; height:13px; margin-left:7px; }
+  .pair .wname{ font-size:10px; padding:0 6px; }
+  .pair .pane{ padding:8px; }
+  .pair .label{ font-size:16px; margin-top:16px; }
+  .pair .cap{ font-size:13px; line-height:1.45; }
+  .pair .go{ font-size:14px; margin-top:6px; }
+
+  /* links sit right under me.exe */
+  .item.links{ margin-top:-18px; }
+  .tiles{ padding:14px; gap:10px; }
+  .tile{ justify-content:center; gap:6px; padding:10px 6px 8px; }
+  @media (min-width:440px){ .tile{ flex-direction:row; gap:8px; padding:9px 6px; } }
+  .tile .ic{ width:28px; height:28px; font-size:13px; }
+  .email-line{ padding:0 14px 12px; }
+
+
+  /* clickable windows */
+  .winlink{ display:block; color:inherit; text-decoration:none !important; }
+  .win{ transition:box-shadow .2s, transform .12s; }
+  .winlink:hover .win{ transform:translate(-3px,-3px); box-shadow:17px 17px 0 var(--sh); }
+  .pair .winlink:hover .win{ box-shadow:12px 12px 0 var(--sh); }
+  .winlink:active .win{ transform:translate(4px,4px); box-shadow:6px 6px 0 var(--sh); }
+  .winlink:focus-visible{ outline:3px solid var(--acc); outline-offset:8px; }
+  .bar .ext{ position:relative; margin-right:8px; padding:0 4px; background:var(--win); font-size:13px; line-height:1; }
+  .pair .bar .ext{ margin-right:5px; font-size:11px; }
+  .winlink:hover .label{ text-decoration:underline; text-underline-offset:4px; }
+
+  /* readme extras */
+  .path{ display:flex; flex-wrap:wrap; align-items:center; gap:7px 5px; margin:2px 0 16px; font-size:12.5px; }
+  .path span{ border:2px solid var(--ink); background:var(--tile); padding:0 7px; }
+  .path span:last-child{ background:var(--ink); color:var(--win); }
+  .path i{ font-style:normal; color:var(--muted); }
+  .offduty{ border-top:2px dashed var(--dots); padding-top:12px; margin-top:4px; color:var(--muted); }
+  .offduty b{ color:var(--ink); }
+
+  /* work log */
+  .log{ list-style:none; margin:0; padding:16px 18px 18px; font-size:14px; }
+  .log li{ display:grid; grid-template-columns:9.5em 1fr; gap:2px 12px; padding:9px 0; border-bottom:2px dashed var(--dots); }
+  .log li:last-child{ border-bottom:0; padding-bottom:0; }
+  .log li:first-child{ padding-top:0; }
+  .log .k{ font-weight:700; color:var(--acc-ink); font-size:12.5px; text-transform:uppercase; letter-spacing:.04em; padding-top:1px; }
+  .log .v b{ font-weight:700; }
+  .log .v span{ color:var(--muted); }
+
+  /* building now */
+  .build{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:12px; padding:16px; }
+  .card{ display:block; border:2px solid var(--ink); background:var(--tile); padding:10px 12px 12px; color:var(--ink); text-decoration:none !important; box-shadow:4px 4px 0 var(--ink); }
+  a.card:hover{ transform:translate(2px,2px); box-shadow:2px 2px 0 var(--ink); }
+  .card .st{ display:inline-flex; align-items:center; gap:6px; font-family:var(--pixel); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+  .card .st i{ width:8px; height:8px; background:#2fb35a; display:block; }
+  .card .st i.wip{ background:#ffc700; }
+  .card .st i.you{ background:var(--acc); }
+  .card .n{ display:block; font-weight:700; font-size:15px; margin-top:6px; }
+  .card .d{ display:block; color:var(--muted); font-size:13px; line-height:1.45; }
+
+  @media (max-width:520px){
+    .log li{ grid-template-columns:1fr; }
+  }
+
+  .pair.four{ row-gap:34px; }
+  .item.links{ margin-top:0; }
+  .pubs{ list-style:none; margin:0; padding:16px 18px 18px; font-size:14px; }
+  .pubs li{ padding:9px 0; border-bottom:2px dashed var(--dots); }
+  .pubs li:first-child{ padding-top:0; }
+  .pubs li:last-child{ border-bottom:0; padding-bottom:0; }
+  .pubs .t{ font-weight:700; }
+  .pubs .m{ display:block; color:var(--muted); font-size:13px; }
+  .pubs .fa{ display:inline-block; margin-left:6px; padding:0 5px; font-size:10px; font-weight:700; border:1.5px solid var(--ink); vertical-align:2px; }
+  .pubs .early .m{ font-size:12.5px; line-height:1.5; }
+  .morelink{ display:block; padding:0 18px 16px; font-size:13px; }
+
+  /* black top bar */
+  .topbar{
+    position:sticky; top:0; z-index:10; display:flex; align-items:center; gap:10px;
+    height:44px; padding:0 10px 0 12px; background:#111; color:#f5f3ed; border-bottom:3px solid #111;
+  }
+  [data-mode="dark"] .topbar{ background:#000; border-bottom-color:#2c2825; }
+  .tb-logo{ background:#f5f3ed; color:#111; font-family:var(--pixel); font-weight:700; font-size:13px; letter-spacing:.06em; padding:3px 6px; }
+  .tb-name{ font-family:var(--pixel); font-size:13px; letter-spacing:.16em; text-transform:uppercase; white-space:nowrap; }
+  .topbar .els{ display:flex; }
+  .topbar .el{ color:#8d877e; }
+  .topbar .el:hover{ color:#f5f3ed; }
+  .topbar .el[aria-pressed="true"]{ color:var(--acc); }
+  .topbar .el:focus-visible{ outline:2px solid #f5f3ed; }
+  /* you may know me from */
+  .known{ padding:16px 18px 18px; font-size:13px; }
+  .known h3{ font-family:var(--pixel); font-weight:400; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:14px 0 8px; }
+  .known h3:first-child{ margin-top:0; }
+  .chips2{ display:flex; flex-wrap:wrap; gap:7px; }
+  .chips2 > *{ border:2px solid var(--ink); background:var(--tile); color:var(--ink); padding:1px 8px; box-shadow:2px 2px 0 var(--ink); text-decoration:none !important; transition:background .12s, color .12s, transform .08s, box-shadow .08s; }
+  .chips2 a:hover{ background:var(--hc); color:var(--hct, #fff); transform:translate(-1px,-1px); box-shadow:3px 3px 0 var(--ink); }
+  .chips2 span:hover{ background:var(--hc); color:var(--hct, #fff); }
+
+  /* hover palette: each thing gets its own colour */
+  .hc > :nth-child(7n+1), .chips2 > :nth-child(7n+1){ --hc:#ff5a1f; }
+  .hc > :nth-child(7n+2), .chips2 > :nth-child(7n+2){ --hc:#3b6cff; }
+  .hc > :nth-child(7n+3), .chips2 > :nth-child(7n+3){ --hc:#2fb35a; }
+  .hc > :nth-child(7n+4), .chips2 > :nth-child(7n+4){ --hc:#ffc700; --hct:#111; }
+  .hc > :nth-child(7n+5), .chips2 > :nth-child(7n+5){ --hc:#ff5fa2; }
+  .hc > :nth-child(7n+6), .chips2 > :nth-child(7n+6){ --hc:#14b8a6; }
+  .hc > :nth-child(7n+7), .chips2 > :nth-child(7n+7){ --hc:#a855f7; }
+
+  /* tiles fill with colour on hover */
+  .tile{ transition:transform .08s, box-shadow .08s, background .12s, color .12s; }
+  .tile:hover{ background:var(--hc); color:var(--hct, #fff); }
+  .tile.li:hover{ background:var(--li); color:#fff; }
+  .tile.orcid .ic{ background:#a6ce39; color:#fff; }
+  .tile.orcid:hover{ background:#a6ce39; color:#111; }
+  .tile.orcid:hover .ic{ color:#5b7a12; }
+  .tile:hover .ic{ background:#fff; color:#111; }
+  .tile.li:hover .ic{ color:var(--li); }
+
+  /* the four windows: title stripes and caption pick up colour on hover */
+  .winlink:hover .bar::before{ background:repeating-linear-gradient(180deg, var(--hc) 0 2px, transparent 2px 4px); }
+  .winlink:hover .label{ color:var(--hc); }
+  .winlink:hover .armor{ color:var(--armor-navy); }
+  .pair .item:nth-child(1){ --hc:#ff5fa2; }
+  .pair .item:nth-child(2){ --hc:var(--armor-orange); }
+  .pair .item:nth-child(3){ --hc:#3b6cff; }
+  .pair .item:nth-child(4){ --hc:var(--app-red); }
+
+  /* publications + work log rows highlight */
+  .pubs a.t{ color:var(--ink); background-image:linear-gradient(var(--hc),var(--hc)); background-size:0 100%; background-repeat:no-repeat; transition:background-size .2s, color .2s; text-decoration:none !important; }
+  .pubs a.t:hover{ background-size:100% 100%; color:var(--hct, #fff); }
+  .log li{ transition:background .15s; }
+  .log li:hover{ background:color-mix(in srgb, var(--hc) 14%, transparent); }
+
+  .ctrls{ display:flex; justify-content:center; gap:4px; margin-bottom:12px; }
+  footer .el{ color:var(--muted); }
+  footer .el[aria-pressed="true"]{ color:var(--acc-ink); }
   footer{ text-align:center; padding:0 18px 40px; font-family:var(--pixel); font-size:11px; letter-spacing:.14em; color:var(--muted); text-transform:uppercase; }
 
   /* on wide screens, scatter the windows like a desktop */
   @media (min-width:860px){
     .desk{ gap:70px; }
-    .item.l{ transform:translateX(-150px); }
-    .item.r{ transform:translateX(150px); }
+    .item.l{ transform:translateX(-120px); }
+    .item.r{ transform:translateX(120px); }
   }
   @media (max-width:440px){ .osname{ display:none; } }
   @media (max-width:370px){ .ver{ display:none; } }
@@ -156,97 +287,144 @@
 </head>
 <body>
 
-<header class="menubar">
-  <div class="logo" aria-hidden="true">AG</div>
-  <span class="osname">Adders OS</span>
+<header class="topbar">
+  <span class="tb-logo" aria-hidden="true">AG</span>
+  <span class="tb-name">Adders OS</span>
   <span class="grow"></span>
-  <div class="els" role="group" aria-label="Colour theme">
-    <button class="el" data-theme="fire" aria-label="Fire theme" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></button>
-    <button class="el" data-theme="water" aria-label="Water theme" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg></button>
-    <button class="el" data-theme="grass" aria-label="Grass theme" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg></button>
-    <button class="el" data-theme="electric" aria-label="Electric theme" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></button>
-  </div>
-  <span class="sep" aria-hidden="true"></span>
-  <button class="el" id="shuffle" aria-label="Shuffle colours" title="Shuffle colours"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect width="12" height="12" x="2" y="10" rx="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg></button>
   <button class="el" id="mode" aria-label="Dark mode" aria-pressed="false" title="Dark mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path class="moon" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/><g class="sun" style="display:none"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"/></g></svg></button>
-  <span class="ver">v1.0</span>
 </header>
 
 <section class="hero">
   <p class="welcome">Welcome to</p>
   <h1>Adders OS</h1>
-  <p class="tagline">the two-tab life of Adnaan Ghanchi: antibiotics by day, small apps by night</p>
+  <p class="tagline">Adnaan Ghanchi: physician, entrepreneur, academic. big problems, small crowds.</p>
 </section>
 
 <main class="desk">
 
-  <!-- ME.EXE : drop a photo named me.jpg next to this file and it gets dithered automatically -->
-  <div class="item">
-    <div class="win w-me shuffle">
-      <div class="bar"><span class="close"></span><span class="wname">me.exe</span></div>
-      <div class="pane"><canvas id="cv-me" width="120" height="140" role="img" aria-label="Pixel portrait"></canvas></div>
+  <!-- FOUR TILES -->
+  <div class="pair four">
+    <div class="item">
+      <!-- shows public/me.jpg as a pixel portrait once you add it; disco ball until then -->
+      <!-- EDIT: email address for this tile -->
+      <a class="winlink" href="mailto:adnaan.ghanchi@armoramr.org?subject=Dance%20and%20silliness">
+        <div class="win w-me">
+          <div class="bar"><span class="close"></span><span class="wname">me.exe</span><span class="ext">&#9993;</span></div>
+          <div class="pane"><canvas id="cv-me" width="128" height="128" role="img" aria-label="Pixel disco ball"></canvas></div>
+        </div>
+        <div class="label">Dance &amp; silliness</div>
+      </a>
+      <p class="cap">(email me. bring moves.)</p>
     </div>
-    <div class="label">Adnaan Ghanchi</div>
-    <p class="cap">(recovering doctor. mostly recovered.)</p>
-    <a class="go" href="#readme">read me &#9662;</a>
-  </div>
-
-  <!-- README.TXT -->
-  <div class="item wide l" id="readme">
-    <div class="win shuffle">
-      <div class="bar"><span class="close"></span><span class="wname">readme.txt</span></div>
-      <div class="readme">
-        <p>Did ICU through the pandemic and GP training, then swapped the stethoscope for policy papers.</p>
-        <p>Now I work on keeping antibiotics working. They're more fragile than you'd think. On weekends I build small, slightly unnecessary apps.</p>
-        <h2>Now</h2>
-        <ol>
-          <li><span class="n">01</span><span><b>pestering brussels</b> <span class="dim">about antibiotics, mostly politely</span></span></li>
-          <li><span class="n">02</span><span><b>building apps</b> <span class="dim">started with a workout timer, scope creep pending</span></span></li>
-          <li><span class="n">03</span><span><b>chasing round 12</b> <span class="dim">of cindy. the pull-ups are the problem</span></span></li>
-        </ol>
-      </div>
+    <div class="item">
+      <!-- EDIT: check this is ARMoR's website -->
+      <a class="winlink" href="https://armoramr.org" target="_blank" rel="noopener">
+        <div class="win w-armor">
+          <div class="bar"><span class="close"></span><span class="wname">armor.exe</span><span class="ext">&#8599;</span></div>
+          <div class="pane"><canvas id="cv-armor" width="96" height="96" role="img" aria-label="Pixel petri dish"></canvas></div>
+        </div>
+        <div class="label"><span class="armor armor-u">ARM<span class="o">o</span>R</span></div>
+      </a>
+      <p class="cap">(director. access + innovation.)</p>
     </div>
-  </div>
-
-  <!-- ARMOR.EXE -->
-  <div class="item r">
-    <div class="win w-armor">
-      <div class="bar"><span class="close"></span><span class="wname">armor.exe</span></div>
-      <div class="pane"><canvas id="cv-armor" width="120" height="120" role="img" aria-label="Pixel petri dish"></canvas></div>
+    <div class="item">
+      <a class="winlink" href="#publications">
+        <div class="win w-pubs">
+          <div class="bar"><span class="close"></span><span class="wname">papers.exe</span><span class="ext">&#9662;</span></div>
+          <div class="pane"><canvas id="cv-pubs" width="96" height="96" role="img" aria-label="Pixel stack of papers"></canvas></div>
+        </div>
+        <div class="label">Publications</div>
+      </a>
+      <p class="cap">(things i wrote down.)</p>
     </div>
-    <div class="label"><span class="armor armor-u">ARM<span class="o">o</span>R</span></div>
-    <p class="cap">(co-director. day job. keeping the drugs working.)</p>
-  </div>
-
-  <!-- WORKOUT.EXE -->
-  <div class="item l">
-    <div class="win w-gym shuffle">
-      <div class="bar"><span class="close"></span><span class="wname">workout.exe</span></div>
-      <div class="pane"><canvas id="cv-gym" width="120" height="120" role="img" aria-label="Pixel kettlebell"></canvas></div>
+    <div class="item">
+      <!-- EDIT: workout app URL -->
+      <a class="winlink" href="https://workout.adders.party">
+        <div class="win w-gym">
+          <div class="bar"><span class="close"></span><span class="wname">workout.exe</span><span class="ext">&#8599;</span></div>
+          <div class="pane"><canvas id="cv-gym" width="96" height="96" role="img" aria-label="Pixel kettlebell"></canvas></div>
+        </div>
+        <div class="label">20 Min Circuit</div>
+      </a>
+      <p class="cap">(stuck on 11 rounds of cindy.)</p>
     </div>
-    <div class="label">20 Min Circuit</div>
-    <p class="cap">(cindy and daily reps. mild suffering.)</p>
-    <!-- EDIT: workout app URL -->
-    <a class="go" href="https://workout.adders.party">open &#9656;</a>
   </div>
 
   <!-- LINKS -->
-  <div class="item wide">
-    <div class="win shuffle">
+  <div class="item wide links">
+    <div class="win">
       <div class="bar"><span class="close"></span><span class="wname">links</span></div>
-      <nav class="tiles" aria-label="Links">
-        <!-- EDIT: replace with your LinkedIn profile URL -->
-        <a class="tile li" href="https://www.linkedin.com/in/YOUR-LINKEDIN-HANDLE"><span class="ic">in</span><span class="t">LinkedIn</span></a>
+      <nav class="tiles hc" aria-label="Links" style="grid-template-columns:1fr 1fr 1fr">
+        <a class="tile li" href="https://www.linkedin.com/in/dradnaan" target="_blank" rel="noopener"><span class="ic">in</span><span class="t">LinkedIn</span></a>
+        <a class="tile orcid" href="https://orcid.org/0000-0003-2376-7063" target="_blank" rel="noopener"><span class="ic">iD</span><span class="t">ORCID</span></a>
         <a class="tile" href="mailto:adnaan.ghanchi@armoramr.org"><span class="ic">&#9993;</span><span class="t">Email</span></a>
-        <a class="tile gym" href="https://workout.adders.party"><span class="ic">&#9650;</span><span class="t">Workout</span></a>
       </nav>
       <div class="email-line">adnaan.ghanchi@armoramr.org</div>
     </div>
   </div>
 
+  <!-- YOU MAY KNOW ME FROM -->
+  <div class="item wide">
+    <div class="win">
+      <div class="bar"><span class="close"></span><span class="wname">you may know me from</span></div>
+      <div class="known">
+        <h3>&#9635; universities</h3>
+        <div class="chips2"><a href="https://www.cam.ac.uk" target="_blank" rel="noopener">Cambridge</a><a href="https://www.kcl.ac.uk" target="_blank" rel="noopener">King's College London</a><a href="https://www.qmul.ac.uk" target="_blank" rel="noopener">Queen Mary</a><a href="https://www.southampton.ac.uk" target="_blank" rel="noopener">Southampton</a><a href="https://www.lshtm.ac.uk" target="_blank" rel="noopener">LSHTM</a></div>
+        <h3>&#9670; biosecurity &amp; impact</h3>
+        <!-- EDIT: Meridian links to its events page and Cambridge Biosecurity Hub to its EA Forum write-up; swap in their own sites if you prefer -->
+        <div class="chips2"><a href="https://luma.com/meridian" target="_blank" rel="noopener">Meridian</a><a href="https://forum.effectivealtruism.org/posts/igCRLtdrasXF4ndd7/cambridge-has-a-biosecurity-hub-and-here-s-what-six-months" target="_blank" rel="noopener">Cambridge Biosecurity Hub</a><a href="https://www.charityentrepreneurship.com" target="_blank" rel="noopener">Charity Entrepreneurship</a></div>
+        <h3>&#9650; further afield</h3>
+        <!-- EDIT: add the organisations you mean, e.g. <a href="https://...">Wilderness Medicine</a> -->
+        <div class="chips2"><span>Wilderness Medicine</span><span>Space Medicine</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PUBLICATIONS -->
+  <div class="item wide" id="publications">
+    <div class="win">
+      <div class="bar"><span class="close"></span><span class="wname">publications</span></div>
+      <!-- EDIT: add papers, articles and op-eds here, newest first -->
+      <ol class="pubs hc">
+        <li><a class="t" href="https://doi.org/10.1016/j.puhip.2026.100769" target="_blank" rel="noopener">Improving case-finding of long-term health problems in disadvantaged communities: a policy-focused evidence brief &#8599;</a> <span class="fa" title="First author">1st</span><span class="m">Public Health in Practice &middot; 2026</span></li>
+        <li><a class="t" href="https://doi.org/10.1016/j.puhip.2026.100756" target="_blank" rel="noopener">Payment mechanisms to improve prevention spending in health care settings: a policy-focused evidence brief &#8599;</a><span class="m">Public Health in Practice &middot; 2026</span></li>
+        <li><a class="t" href="https://forum.effectivealtruism.org/posts/srjXGXhsecmZvpEdq/two-years-of-doing-advocacy-on-antimicrobial-resistance" target="_blank" rel="noopener">Two years of doing advocacy on antimicrobial resistance &#8599;</a><span class="m">EA Forum &middot; with the ARMoR team</span></li>
+        <li><a class="t" href="https://doi.org/10.1136/bmjoq-2021-001640" target="_blank" rel="noopener">Implementation of treatment escalation plans in an old age psychiatry inpatient hospital &#8599;</a><span class="m">BMJ Open Quality &middot; 2021</span></li>
+        <li><a class="t" href="https://doi.org/10.1192/bjo.2021.208" target="_blank" rel="noopener">Implementation of treatment escalation plans in a community psychiatric hospital &#8599;</a><span class="m">BJPsych Open &middot; 2021</span></li>
+        <li><a class="t" href="https://doi.org/10.1093/cdn/nzz005" target="_blank" rel="noopener">Guts, germs, and iron: a systematic review on iron supplementation, iron fortification, and diarrhea in children aged 4-59 months &#8599;</a> <span class="fa" title="First author">1st</span><span class="m">Current Developments in Nutrition &middot; 2019</span></li>
+        <li><span class="t">Drug-resistant infections in people with cancer</span><span class="m">with UICC &middot; in the works</span></li>
+        <li class="early"><span class="m">Early essays: <i>Death at a distance: what can we learn from the physiology of voodoo?</i> (2013) &middot; <i>The rising incidence of type 1 diabetes</i> (2014) &middot; <i>Is the internet-enabled patient the new paragon of healthcare?</i> (2015)</span></li>
+      </ol>
+      <a class="morelink" href="https://orcid.org/0000-0003-2376-7063" target="_blank" rel="noopener">full record on ORCID &#8599;</a>
+    </div>
+  </div>
+
+  <!-- WORK.LOG -->
+  <div class="item wide">
+    <div class="win">
+      <div class="bar"><span class="close"></span><span class="wname">work.log</span></div>
+      <ol class="log hc">
+        <li><span class="k">EU budget</span><span class="v"><b>Getting AMR into the 2028-34 EU budget.</b> <span>Brussels is deciding what it funds for the next seven years.</span></span></li>
+        <li><span class="k">EU pharma law</span><span class="v"><b>Pull incentives for new antibiotics.</b> <span>Paying for drugs we hope to barely use is a strange market. Someone has to design it.</span></span></li>
+        <li><span class="k">Medicines Act</span><span class="v"><b>The Critical Medicines Act.</b> <span>Keeping the old antibiotics on the shelf, too.</span></span></li>
+        <li><span class="k">Advising</span><span class="v"><b>Philanthropic advice</b> <span>on global health, development, science and innovation.</span></span></li>
+        <li><span class="k">Dec 2025</span><span class="v"><b>European Parliament breakfast on AMR investment,</b> <span>with Dame Sally Davies and MEPs.</span></span></li>
+        <li><span class="k">Westminster</span><span class="v"><b>APPG event: cancer care through the lens of infection.</b> <span>Chemo works less well when infections don't respond to treatment.</span></span></li>
+      </ol>
+    </div>
+  </div>
+
 </main>
 
-<footer>adders.party &middot; built on a saturday</footer>
+<footer>
+  <div class="els ctrls" role="group" aria-label="Colour theme">
+    <button class="el" data-theme="fire" aria-label="Fire theme" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></button>
+    <button class="el" data-theme="water" aria-label="Water theme" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg></button>
+    <button class="el" data-theme="grass" aria-label="Grass theme" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg></button>
+    <button class="el" data-theme="electric" aria-label="Electric theme" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></button>
+  </div>
+  adders.party &middot; built on a saturday
+</footer>
 
 <script>
 (function(){
@@ -272,21 +450,21 @@
   function setPaper(h){ PAPER = hex(h); }
 
   // 1-bit Floyd-Steinberg in a chosen ink colour
-  function dither1(canvas, draw, inkHex){
+  function dither1(canvas, draw, inkHex, tone, paperHex){
     var w = canvas.width, h = canvas.height;
     var off = document.createElement('canvas'); off.width = w; off.height = h;
     var o = off.getContext('2d');
     o.fillStyle = '#fff'; o.fillRect(0,0,w,h);
     draw(o, w, h);
     var src = o.getImageData(0,0,w,h).data, g = new Float32Array(w*h), i;
-    for (i = 0; i < w*h; i++) g[i] = src[i*4]*.299 + src[i*4+1]*.587 + src[i*4+2]*.114;
+    for (i = 0; i < w*h; i++){ g[i] = src[i*4]*.299 + src[i*4+1]*.587 + src[i*4+2]*.114; if (tone) g[i] = tone(g[i]); }
     for (var y = 0; y < h; y++) for (var x = 0; x < w; x++){
       i = y*w + x; var old = g[i], nw = old < 128 ? 0 : 255, err = old - nw; g[i] = nw;
       if (x+1 < w) g[i+1] += err*7/16;
       if (y+1 < h){ if (x > 0) g[i+w-1] += err*3/16; g[i+w] += err*5/16; if (x+1 < w) g[i+w+1] += err/16; }
     }
-    var ink = hex(inkHex), ctx = canvas.getContext('2d'), out = ctx.createImageData(w,h);
-    for (i = 0; i < w*h; i++){ var c = g[i] < 128 ? ink : PAPER; out.data[i*4]=c[0]; out.data[i*4+1]=c[1]; out.data[i*4+2]=c[2]; out.data[i*4+3]=255; }
+    var ink = hex(inkHex), paper = paperHex ? hex(paperHex) : PAPER, ctx = canvas.getContext('2d'), out = ctx.createImageData(w,h);
+    for (i = 0; i < w*h; i++){ var c = g[i] < 128 ? ink : paper; out.data[i*4]=c[0]; out.data[i*4+1]=c[1]; out.data[i*4+2]=c[2]; out.data[i*4+3]=255; }
     ctx.putImageData(out,0,0);
   }
 
@@ -340,6 +518,52 @@
     o.restore();
   }
 
+  // disco ball (stand-in for the face tile until me.jpg exists)
+  function drawDisco(o, w, h){
+    var cx = w/2, cy = h*.56, R = w*.33;
+    o.strokeStyle = 'rgb(40,40,40)'; o.lineWidth = 2;
+    o.beginPath(); o.moveTo(cx, 0); o.lineTo(cx, cy - R); o.stroke();
+    o.save(); o.beginPath(); o.arc(cx, cy, R, 0, Math.PI*2); o.clip();
+    o.fillStyle = shade(o, cx, cy, R, 'rgb(240,240,240)', 'rgb(25,25,25)', -.4, -.45); o.fillRect(0,0,w,h);
+    var seed = 3; function rnd(){ seed = (seed*16807) % 2147483647; return seed/2147483647; }
+    var step = R/4.2;
+    for (var y = cy - R; y < cy + R; y += step){
+      var rr = Math.sqrt(Math.max(0, R*R - (y + step/2 - cy)*(y + step/2 - cy))), n = Math.max(2, Math.round(rr*2/step)), fw = rr*2/n;
+      for (var i = 0; i < n; i++){
+        var x = cx - rr + i*fw, v = rnd();
+        if (v > .82){ o.fillStyle = 'rgb(255,255,255)'; o.fillRect(x+1, y+1, fw-2, step-2); }
+        else if (v < .14){ o.fillStyle = 'rgb(30,30,30)'; o.fillRect(x+1, y+1, fw-2, step-2); }
+        o.fillStyle = 'rgba(20,20,20,.75)'; o.fillRect(x, y, 1, step);
+      }
+      o.fillRect(cx - R, y, R*2, 1);
+    }
+    o.restore();
+    o.fillStyle = 'rgb(255,255,255)';
+    [[cx + R*1.05, cy - R*.9, 4], [cx - R*1.15, cy + R*.2, 3], [cx + R*.9, cy + R*1.05, 3]].forEach(function(p){
+      o.fillStyle = 'rgb(30,30,30)'; o.fillRect(p[0] - p[2], p[1], p[2]*2 + 1, 1); o.fillRect(p[0], p[1] - p[2], 1, p[2]*2 + 1);
+    });
+  }
+
+  // stack of papers
+  function drawPapers(o, w, h){
+    o.fillStyle = 'rgb(200,200,200)'; o.beginPath(); o.ellipse(w/2, h*.88, w*.36, h*.035, 0, 0, Math.PI*2); o.fill();
+    function sheet(x, y, a, tone){
+      o.save(); o.translate(x, y); o.rotate(a);
+      var sw = w*.5, sh = h*.62;
+      o.fillStyle = 'rgb(30,30,30)'; o.fillRect(-sw/2 + 3, -sh/2 + 3, sw, sh);
+      var g = o.createLinearGradient(-sw/2, -sh/2, sw/2, sh/2); g.addColorStop(0, 'rgb(255,255,255)'); g.addColorStop(1, tone);
+      o.fillStyle = g; o.fillRect(-sw/2, -sh/2, sw, sh);
+      o.strokeStyle = 'rgb(20,20,20)'; o.lineWidth = 1.5; o.strokeRect(-sw/2, -sh/2, sw, sh);
+      o.fillStyle = 'rgb(40,40,40)';
+      o.fillRect(-sw/2 + 6, -sh/2 + 7, sw*.55, 3);
+      for (var i = 0; i < 6; i++) o.fillRect(-sw/2 + 6, -sh/2 + 16 + i*5.5, (i % 3 === 2 ? sw*.45 : sw - 12), 1.5);
+      o.restore();
+    }
+    sheet(w*.42, h*.5, -0.18, 'rgb(150,150,150)');
+    sheet(w*.56, h*.47, 0.12, 'rgb(175,175,175)');
+    sheet(w*.5, h*.5, -0.03, 'rgb(205,205,205)');
+  }
+
   // petri dish with colonies and a zone of inhibition round an antibiotic disc
   function drawPetri(o, w, h){
     var cx = w/2, cy = h/2, R = w*.43;
@@ -377,18 +601,58 @@
     o.fillStyle = 'rgba(255,255,255,.95)'; o.beginPath(); o.ellipse(cx - R*.42, cy - R*.42, R*.14, R*.08, -.7, 0, Math.PI*2); o.fill();
   }
 
+  /* ---------- me.exe: face and disco ball take turns, with a pixel dissolve ---------- */
   var me = document.getElementById('cv-me'), photo = null;
+  var meCtx = me.getContext('2d'), MW = me.width, MH = me.height;
+  var faceFrame = null, discoFrame = null, showing = 'disco', fading = false;
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var ORDER = (function(){ var n = MW*MH, o = new Uint32Array(n), i, j, t; for (i = 0; i < n; i++) o[i] = i;
+    for (i = n - 1; i > 0; i--){ j = Math.floor(Math.random()*(i+1)); t = o[i]; o[i] = o[j]; o[j] = t; } return o; })();
+
+  function frameOf(fn){ var c = document.createElement('canvas'); c.width = MW; c.height = MH; fn(c); return c.getContext('2d').getImageData(0,0,MW,MH); }
+  function buildMe(){
+    // this tile is always printed dark-on-light, so the face never turns into a negative
+    var keep = PAPER; setPaper('#fbfaf6');
+    discoFrame = frameOf(function(c){ dither1(c, drawDisco, '#111111'); });
+    if (photo) faceFrame = frameOf(function(c){
+      dither1(c, function(o, w, h){
+        var r = Math.max(w/photo.width, h/photo.height), dw = photo.width*r, dh = photo.height*r;
+        o.drawImage(photo, (w-dw)/2, (h-dh)/2, dw, dh);
+      }, '#111111', function(v){ v = (v - 118) * 1.25 + 138; return v < 0 ? 0 : v > 255 ? 255 : v; });
+    });
+    PAPER = keep;
+    if (showing === 'face' && !faceFrame) showing = 'disco';
+    meCtx.putImageData(showing === 'face' ? faceFrame : discoFrame, 0, 0);
+  }
+  function swapMe(){
+    if (!faceFrame || fading) return;
+    var next = showing === 'face' ? 'disco' : 'face', to = next === 'face' ? faceFrame : discoFrame;
+    showing = next;
+    me.setAttribute('aria-label', next === 'face' ? 'Pixel portrait of Adnaan' : 'Pixel disco ball');
+    if (reduce){ meCtx.putImageData(to, 0, 0); return; }
+    var cur = meCtx.getImageData(0,0,MW,MH), n = MW*MH, done = 0, per = Math.ceil(n/16);
+    fading = true;
+    (function step(){
+      var end = Math.min(n, done + per);
+      for (var k = done; k < end; k++){ var p = ORDER[k]*4; cur.data[p] = to.data[p]; cur.data[p+1] = to.data[p+1]; cur.data[p+2] = to.data[p+2]; }
+      done = end; meCtx.putImageData(cur, 0, 0);
+      if (done < n) requestAnimationFrame(step); else fading = false;
+    })();
+  }
+
   function render(){
     var dark = root.getAttribute('data-mode') === 'dark';
     setPaper(dark ? '#1b1816' : '#fbfaf6');
     var ink = dark ? '#efe9df' : '#111111';
     dither1(document.getElementById('cv-armor'), drawPetri, dark ? '#14b8a6' : '#0a2563');
     dither1(document.getElementById('cv-gym'), drawKettlebell, ink);
-    if (photo) ditherPhoto(me, photo); else dither1(me, drawCapsule, ink);
+    dither1(document.getElementById('cv-pubs'), drawPapers, ink);
+    buildMe();
   }
   var img = new Image();
-  img.onload = function(){ photo = img; render(); me.setAttribute('aria-label', 'Pixel portrait of Adnaan'); };
+  img.onload = function(){ photo = img; showing = 'face'; render(); me.setAttribute('aria-label', 'Pixel portrait of Adnaan'); };
   img.src = 'me.jpg';
+  setInterval(function(){ if (!document.hidden) swapMe(); }, 3000);
 
   /* ---------- dark mode ---------- */
   var modeBtn = document.getElementById('mode');
@@ -406,16 +670,6 @@
   if (!savedMode) savedMode = (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
   setMode(savedMode);
   modeBtn.addEventListener('click', function(){ setMode(root.getAttribute('data-mode') === 'dark' ? 'light' : 'dark'); });
-
-  /* ---------- colour shuffler: new shadow colours on every roll ---------- */
-  var PALETTE = ['#ff5a1f','#3b6cff','#2fb35a','#ffc700','#e8262e','#a855f7','#14b8a6','#ff5fa2','var(--ink)'];
-  document.getElementById('shuffle').addEventListener('click', function(){
-    var pool = PALETTE.slice().sort(function(){ return Math.random() - .5; });
-    document.querySelectorAll('.win.shuffle').forEach(function(w, i){
-      w.style.setProperty('--sh', pool[i % pool.length]);
-      w.classList.remove('jiggle'); void w.offsetWidth; w.classList.add('jiggle');
-    });
-  });
 })();
 </script>
 </body>
