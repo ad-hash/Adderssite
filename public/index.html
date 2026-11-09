@@ -86,8 +86,9 @@
   [data-busy] footer{ display:block; }
   [data-busy] footer > span{ margin-top:8px; }
   [data-bg="moon"]{ --paper:#0b1030; }
-  [data-bg="moon"] body::before{ content:""; position:fixed; inset:0; z-index:-1; background:#0b1030 url(bg/moon.jpg) center 42%/cover no-repeat; }
-  [data-mode="dark"][data-bg="moon"] body::before{ background:linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.35)), #0b1030 url(bg/moon.jpg) center 42%/cover no-repeat; }
+  /* the painting stretches over the whole page and scrolls with it: sky at the top, lake at the bottom */
+  [data-bg="moon"] body{ background:#0b1030 url(bg/moon.jpg) center top/cover no-repeat; }
+  [data-mode="dark"][data-bg="moon"] body{ background:linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.35)), #0b1030 url(bg/moon.jpg) center top/cover no-repeat; }
   .credit{ display:none; }
   [data-bg="moon"] .credit{ display:table; font-size:10px; }
   body{ transition:background-color .45s ease; }
