@@ -86,11 +86,37 @@
   [data-busy] footer{ display:block; }
   [data-busy] footer > span{ margin-top:8px; }
   [data-bg="moon"]{ --paper:#0b1030; }
-  /* the painting stretches over the whole page and scrolls with it: sky at the top, lake at the bottom */
-  [data-bg="moon"] body{ background:#0b1030 url(bg/moon.jpg) center top/cover no-repeat; }
-  [data-mode="dark"][data-bg="moon"] body{ background:linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.35)), #0b1030 url(bg/moon.jpg) center top/cover no-repeat; }
-  .credit{ display:none; }
-  [data-bg="moon"] .credit{ display:table; font-size:10px; }
+  /* the painting stays sharp at screen size and pans from the moon (top) to the figure (bottom) as you scroll */
+  [data-bg="moon"] body{ background:#0b1030; }
+  [data-bg="moon"] body::before{ content:""; position:fixed; inset:0; z-index:-1; background-image:url(bg/moon.jpg); background-repeat:no-repeat; background-size:var(--msz,cover); background-position:center var(--mpos,0%); }
+  [data-mode="dark"][data-bg="moon"] body::before{ background-image:linear-gradient(rgba(0,0,0,.3),rgba(0,0,0,.3)), url(bg/moon.jpg); background-size:100% 100%, var(--msz,cover); background-position:0 0, center var(--mpos,0%); }
+
+  /* ---------- moonlit forest: night-glass UI so the painting shows through ---------- */
+  [data-bg="moon"]{
+    --win:rgba(12,16,46,.58); --tile:rgba(255,255,255,.07); --ink:#efe6d2; --muted:rgba(239,230,210,.72);
+    --dots:rgba(239,230,210,.18); --acc-ink:#ffb37a; --rust:#ffb37a; --solid:#141a45; --sh:rgba(3,5,20,.45);
+  }
+  [data-bg="moon"] .win, [data-bg="moon"] .pair .win{ backdrop-filter:blur(7px) saturate(1.15); -webkit-backdrop-filter:blur(7px) saturate(1.15); border-color:rgba(239,230,210,.75); box-shadow:12px 12px 0 var(--sh); }
+  [data-bg="moon"] .winlink:hover .win{ box-shadow:15px 15px 0 var(--sh); }
+  [data-bg="moon"] .bar{ background:var(--solid); border-bottom-color:rgba(239,230,210,.75); }
+  [data-bg="moon"] .bar::before{ background:repeating-linear-gradient(180deg, rgba(239,230,210,.55) 0 2px, transparent 2px 4px); }
+  [data-bg="moon"] .wname, [data-bg="moon"] .close{ background:var(--solid); }
+  [data-bg="moon"] .close{ box-shadow:0 0 0 3px var(--solid); border-color:rgba(239,230,210,.75); }
+  [data-bg="moon"] .pane{ background:transparent; }
+  [data-bg="moon"] .chips2 > *, [data-bg="moon"] .tile{ border-color:rgba(239,230,210,.6); box-shadow:3px 3px 0 var(--sh); }
+  [data-bg="moon"] .tile .ic{ background:#efe6d2; color:#141a45; }
+  [data-bg="moon"] .tile.li .ic{ background:var(--li); color:#fff; }
+  [data-bg="moon"] .tile.orcid .ic{ background:#a6ce39; color:#fff; }
+  [data-bg="moon"] .armor{ color:#9fb4ff; }
+  [data-bg="moon"] .log li, [data-bg="moon"] .pubs li{ border-bottom-color:rgba(239,230,210,.18); }
+  [data-bg="moon"] .pubs .fa{ border-color:rgba(239,230,210,.6); }
+  [data-bg="moon"] .topbar{ background:rgba(5,8,26,.72); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border-bottom-color:transparent; }
+  [data-busy] .hero > *, [data-busy] .label, [data-busy] .cap, [data-busy] footer > :not(.ctrls), [data-busy] .ctrls{ backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px); border-color:rgba(239,230,210,.5) !important; }
+  [data-bg="moon"] .bgmenu{ background:var(--solid); }
+  [data-bg="moon"] .win{ --sh:rgba(3,5,20,.45); }
+  /* nothing at the bottom: the page ends on the painting's lake and figure */
+  [data-bg="moon"] footer{ display:none; }
+  [data-bg="moon"] .desk{ padding-bottom:42vh; }
   body{ transition:background-color .45s ease; }
   #recolour.spin svg{ animation:spin .5s ease; }
   #recolour[aria-expanded="true"]{ color:#f5f3ed; }
@@ -369,6 +395,19 @@
 
 <main class="desk">
 
+  <!-- LINKS -->
+  <div class="item wide links">
+    <div class="win">
+      <div class="bar"><span class="close"></span><span class="wname">links</span></div>
+      <nav class="tiles hc" aria-label="Links" style="grid-template-columns:1fr 1fr 1fr">
+        <a class="tile li" href="https://www.linkedin.com/in/dradnaan" target="_blank" rel="noopener"><span class="ic">in</span><span class="t">LinkedIn</span></a>
+        <a class="tile orcid" href="https://orcid.org/0000-0003-2376-7063" target="_blank" rel="noopener"><span class="ic">iD</span><span class="t">ORCID</span></a>
+        <a class="tile" href="mailto:adnaan.ghanchi@armoramr.org"><span class="ic">&#9993;</span><span class="t">Email</span></a>
+      </nav>
+      <div class="email-line">adnaan.ghanchi@armoramr.org</div>
+    </div>
+  </div>
+
   <!-- YOU MAY KNOW ME FROM -->
   <div class="item wide">
     <div class="win">
@@ -436,19 +475,6 @@
     </div>
   </div>
 
-  <!-- LINKS -->
-  <div class="item wide links">
-    <div class="win">
-      <div class="bar"><span class="close"></span><span class="wname">links</span></div>
-      <nav class="tiles hc" aria-label="Links" style="grid-template-columns:1fr 1fr 1fr">
-        <a class="tile li" href="https://www.linkedin.com/in/dradnaan" target="_blank" rel="noopener"><span class="ic">in</span><span class="t">LinkedIn</span></a>
-        <a class="tile orcid" href="https://orcid.org/0000-0003-2376-7063" target="_blank" rel="noopener"><span class="ic">iD</span><span class="t">ORCID</span></a>
-        <a class="tile" href="mailto:adnaan.ghanchi@armoramr.org"><span class="ic">&#9993;</span><span class="t">Email</span></a>
-      </nav>
-      <div class="email-line">adnaan.ghanchi@armoramr.org</div>
-    </div>
-  </div>
-
   <!-- PUBLICATIONS -->
   <div class="item wide" id="publications">
     <div class="win">
@@ -493,7 +519,6 @@
     <button class="el" data-theme="electric" aria-label="Electric theme" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></button>
   </div>
   <span class="ft">adders.party &middot; built on a saturday</span>
-  <span class="credit">by Wong</span>
 </footer>
 
 <script>
@@ -711,10 +736,11 @@
   }
 
   function render(){
-    var dark = root.getAttribute('data-mode') === 'dark';
-    setPaper(dark ? '#1b1816' : '#fbfaf6');
-    var ink = dark ? '#efe9df' : '#111111';
-    dither1(document.getElementById('cv-armor'), drawPetri, dark ? '#14b8a6' : '#0a2563');
+    var moon = root.getAttribute('data-bg') === 'moon';
+    var dark = root.getAttribute('data-mode') === 'dark' || moon;
+    setPaper(moon ? '#141a45' : dark ? '#1b1816' : '#fbfaf6');
+    var ink = moon ? '#efe6d2' : dark ? '#efe9df' : '#111111';
+    dither1(document.getElementById('cv-armor'), drawPetri, moon ? '#7fe0d2' : dark ? '#14b8a6' : '#0a2563');
     dither1(document.getElementById('cv-gym'), drawKettlebell, ink);
     dither1(document.getElementById('cv-pubs'), drawPapers, ink);
     buildMe();
@@ -746,13 +772,27 @@
     it.addEventListener('click', function(){ pick(i, true); });
     grid.appendChild(it);
   });
+  // pan the painting with the scroll: image is sized to cover the screen width and 1.5x its height
+  var panQueued = false;
+  function moonPan(){
+    panQueued = false;
+    if (root.getAttribute('data-bg') !== 'moon') return;
+    var vw = innerWidth, vh = innerHeight, k = Math.max(vw/1055, vh*1.5/1491);
+    root.style.setProperty('--msz', Math.ceil(1055*k) + 'px ' + Math.ceil(1491*k) + 'px');
+    var max = Math.max(1, document.documentElement.scrollHeight - vh);
+    root.style.setProperty('--mpos', (Math.min(1, scrollY/max)*100).toFixed(2) + '%');
+  }
+  function queuePan(){ if (!panQueued){ panQueued = true; requestAnimationFrame(moonPan); } }
+  addEventListener('scroll', queuePan, { passive:true });
+  addEventListener('resize', queuePan);
   function applyPaper(){
     root.setAttribute('data-bg', BGS[paperIdx][0]);
     if (BUSY.indexOf(BGS[paperIdx][0]) > -1) root.setAttribute('data-busy',''); else root.removeAttribute('data-busy');
+    queuePan();
     grid.querySelectorAll('.bgitem').forEach(function(el){ el.setAttribute('aria-checked', +el.dataset.i === paperIdx ? 'true' : 'false'); });
   }
   function pick(i, remember){
-    paperIdx = i; applyPaper();
+    paperIdx = i; applyPaper(); render();
     try { if (remember) localStorage.setItem('adders-bg', BGS[i][0]); else localStorage.removeItem('adders-bg'); } catch(e){}
   }
   function openMenu(open){
@@ -778,8 +818,8 @@
     modeBtn.querySelector('.moon').style.display = dark ? 'none' : '';
     modeBtn.querySelector('.sun').style.display = dark ? '' : 'none';
     try { localStorage.setItem('adders-mode', m); } catch(e){}
-    render();
     applyPaper();
+    render();
   }
   var savedMode = null;
   try { savedMode = localStorage.getItem('adders-mode'); } catch(e){}
