@@ -24,7 +24,7 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,400&family=Silkscreen:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   :root{
     --paper:#f5f3ed;
@@ -79,8 +79,7 @@
   [data-bg="crt"] body{ background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.05) 0 1px,transparent 1px 4px); }
   [data-mode="dark"][data-bg="crt"] body{ background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 4px); }
   /* on the busy backgrounds, loose text gets a little paper plate so it stays readable */
-  [data-busy] .hero > *, [data-busy] .label, [data-busy] .cap, [data-busy] footer > :not(.ctrls){ display:table; margin-left:auto; margin-right:auto; background:var(--win); padding:2px 10px; border:2px solid var(--ink); }
-  [data-busy] .hero > *{ margin-bottom:8px; }
+  [data-busy] .label, [data-busy] .cap, [data-busy] footer > :not(.ctrls){ display:table; margin-left:auto; margin-right:auto; background:var(--win); padding:2px 10px; border:2px solid var(--ink); }
   [data-busy] .cap{ margin-top:4px; }
   [data-busy] .ctrls{ display:inline-flex; background:var(--win); border:2px solid var(--ink); padding:0 6px; }
   [data-busy] footer{ display:block; }
@@ -111,7 +110,7 @@
   [data-bg="moon"] .log li, [data-bg="moon"] .pubs li{ border-bottom-color:rgba(239,230,210,.18); }
   [data-bg="moon"] .pubs .fa{ border-color:rgba(239,230,210,.6); }
   [data-bg="moon"] .topbar{ background:rgba(5,8,26,.72); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border-bottom-color:transparent; }
-  [data-busy] .hero > *, [data-busy] .label, [data-busy] .cap, [data-busy] footer > :not(.ctrls), [data-busy] .ctrls{ backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px); border-color:rgba(239,230,210,.5) !important; }
+  [data-busy] .label, [data-busy] .cap, [data-busy] footer > :not(.ctrls), [data-busy] .ctrls{ backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px); border-color:rgba(239,230,210,.5) !important; }
   [data-bg="moon"] .bgmenu{ background:var(--solid); }
   [data-bg="moon"] .win{ --sh:rgba(3,5,20,.45); }
   /* nothing at the bottom: the page ends on the painting's lake and figure */
@@ -162,7 +161,11 @@
   .ver{ font-family:var(--pixel); font-size:12px; letter-spacing:.1em; border:2px solid var(--ink); padding:3px 9px; }
 
   /* ---------- hero ---------- */
-  .hero{ text-align:center; padding:26px 18px 0; }
+  .hero{ padding:28px 18px 0; display:flex; justify-content:center; }
+  .about-win{ width:min(460px, 88vw); }
+  .about{ padding:20px 22px 22px; text-align:center; }
+  .about h1{ font-family:"Fraunces", Georgia, serif; font-weight:700; font-optical-sizing:auto; text-transform:none; letter-spacing:-.02em; line-height:1.02; font-size:clamp(38px, 11vw, 58px); margin:0 auto; max-width:none; }
+  .about .tagline{ font-family:"Fraunces", Georgia, serif; font-style:italic; font-weight:400; font-size:clamp(18px, 4.8vw, 22px); line-height:1.35; letter-spacing:0; margin:14px auto 0; max-width:26ch; color:var(--ink); }
   .welcome{ font-family:var(--mono); font-size:15px; letter-spacing:.28em; color:var(--rust); text-transform:uppercase; margin:0; }
   h1{ font-family:var(--pixel); font-weight:400; font-size:clamp(30px,8.6vw,58px); letter-spacing:.08em; line-height:1.15; margin:6px auto 12px; max-width:12ch; text-transform:uppercase; }
   .tagline{ max-width:34ch; margin:0 auto; font-size:clamp(15px,3.6vw,17px); letter-spacing:.03em; }
@@ -388,8 +391,13 @@
 </header>
 
 <section class="hero">
-  <h1>Dr Adnaan Ghanchi</h1>
-  <p class="tagline">Physician, entrepreneur, academic. Big problems, small crowds.</p>
+  <div class="win about-win">
+    <div class="bar"><span class="close"></span><span class="wname">about.txt</span></div>
+    <div class="about">
+      <h1>Dr Adnaan Ghanchi</h1>
+      <p class="tagline">physician, entrepreneur, academic. big problems, small crowds.</p>
+    </div>
+  </div>
 </section>
 
 <main class="desk">
