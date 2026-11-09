@@ -712,7 +712,7 @@
   img.src = 'me.jpg';
   setInterval(function(){ if (!document.hidden) swapMe(); }, 3000);
 
-  /* ---------- backgrounds: visitors pick one, or get a random one ---------- */
+  /* ---------- backgrounds: paper grain by default; visitors can pick another or roll a random one ---------- */
   var BGS = [
     ['cream','cream','#f5f3ed'], ['pink','riso pink','#f7d9d3'], ['mint','mint','#d6eedf'], ['butter','butter','#f8ecbd'],
     ['lilac','lilac','#e3dcf4'], ['grain','paper grain','#ebe5d6'],
@@ -724,7 +724,7 @@
   var paperIdx = -1, savedBg = null;
   try { savedBg = localStorage.getItem('adders-bg'); } catch(e){}
   BGS.forEach(function(b, i){ if (b[0] === savedBg) paperIdx = i; });
-  if (paperIdx < 0) paperIdx = Math.floor(Math.random()*BGS.length);
+  if (paperIdx < 0) BGS.forEach(function(b, i){ if (b[0] === 'grain') paperIdx = i; });  // default: paper grain
   var grid = document.getElementById('bggrid'), menu = document.getElementById('bgmenu'), recolour = document.getElementById('recolour');
   BGS.forEach(function(b, i){
     var it = document.createElement('button');
