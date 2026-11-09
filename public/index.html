@@ -89,7 +89,7 @@
   [data-bg="moon"] body::before{ content:""; position:fixed; inset:0; z-index:-1; background:#0b1030 url(bg/moon.jpg) center 42%/cover no-repeat; }
   [data-mode="dark"][data-bg="moon"] body::before{ background:linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.35)), #0b1030 url(bg/moon.jpg) center 42%/cover no-repeat; }
   .credit{ display:none; }
-  [data-bg="moon"] .credit{ display:table; }
+  [data-bg="moon"] .credit{ display:table; font-size:10px; }
   body{ transition:background-color .45s ease; }
   #recolour.spin svg{ animation:spin .5s ease; }
   #recolour[aria-expanded="true"]{ color:#f5f3ed; }
@@ -492,8 +492,7 @@
     <button class="el" data-theme="electric" aria-label="Electric theme" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></button>
   </div>
   <span class="ft">adders.party &middot; built on a saturday</span>
-  <!-- EDIT: artist's name and link -->
-  <span class="credit">background: painting by <a href="#" target="_blank" rel="noopener">the artist</a>, used with permission</span>
+  <span class="credit">by Wong</span>
 </footer>
 
 <script>
