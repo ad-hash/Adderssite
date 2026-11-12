@@ -184,7 +184,7 @@ function bell(n=1,force){if(!ac||(useTrack&&!force))return;const b=BELLS[bi];for
 
 /* the whole sit as one audio track (silence with the bells baked in), so bells still ring when the phone is locked */
 const SR=8000, track=new Audio();track.preload='auto';track.setAttribute('playsinline','');
-let useTrack=false, trackURL=null;
+let useTrack=false, trackURL=null, tPrep=0, tSit=0;
 function buildTrack(prep,sit,every,b){
   const pad=b.gap*2+Math.max(...b.parts.map(p=>p[2]))+1, n=Math.ceil((prep+sit+pad)*SR), buf=new Uint8Array(44+n);
   const d=new DataView(buf.buffer),w=(o,str)=>[...str].forEach((c,i)=>buf[o+i]=c.charCodeAt(0));
@@ -202,11 +202,28 @@ function startTrack(prep,sit){
   stopTrack();const b=BELLS[bi];if(!b.parts.length)return;
   try{trackURL=buildTrack(prep,sit,cfg.every,b);track.src=trackURL;const p=track.play();useTrack=true;
     if(p)p.catch(()=>{useTrack=false;bell()});
-    if('mediaSession' in navigator){navigator.mediaSession.metadata=new MediaMetadata({title:`Sit · ${cfg.len} min`,artist:'Adders OS'});
-      navigator.mediaSession.setActionHandler('play',()=>{if(run.paused)$('go').click()});
-      navigator.mediaSession.setActionHandler('pause',()=>{if(run.phase&&!run.paused&&run.phase!=='done')$('go').click()})}
+    tPrep=prep;tSit=sit;
+    if('mediaSession' in navigator){const ms=navigator.mediaSession;
+      ms.metadata=new MediaMetadata({title:`Sit · ${cfg.len} min`,artist:'Adders OS',artwork:[{src:catArt(),sizes:'512x512',type:'image/png'}]});
+      const h=(a,f)=>{try{ms.setActionHandler(a,f)}catch{}};
+      h('play',()=>{if(run.paused)$('go').click()});
+      h('pause',()=>{if(run.phase&&!run.paused&&run.phase!=='done')$('go').click()});
+      h('seekto',d=>seek(d.seekTime));
+      h('seekbackward',d=>seek(track.currentTime-(d.seekOffset||15)));
+      h('seekforward',d=>seek(track.currentTime+(d.seekOffset||15)));}
   }catch{useTrack=false}
 }
+/* lock-screen artwork: the meditating cat, drawn crisp at 512px */
+function catArt(){const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d'),cs=getComputedStyle(root),v=k=>cs.getPropertyValue(k).trim();
+  x.fillStyle=v('--paper');x.fillRect(0,0,512,512);const col={K:v('--ink'),W:v('--win'),A:v('--acc')},px=20,ox=(512-16*px)/2,oy=(512-CAT.length*px)/2;
+  CAT.forEach((row,y)=>[...row].forEach((ch,i)=>{if(ch!=='.'){x.fillStyle=col[ch];x.fillRect(ox+i*px,oy+y*px,px,px)}}));return c.toDataURL('image/png')}
+/* scrub from the lock screen: the timer follows the track */
+function seek(p){if(!trackURL||!run.phase||run.phase==='done')return;const pz=run.paused;p=Math.max(0,Math.min(tPrep+tSit-.05,p));try{track.currentTime=p}catch{}
+  const now=Date.now(),setLeft=ms=>{if(run.paused)run.left=ms;else run.end=now+ms};
+  if(p<tPrep){if(run.phase!=='prep'){begin('prep',tPrep);run.paused=pz}setLeft((tPrep-p)*1000)}
+  else{if(run.phase!=='sit'){begin('sit',tSit);run.paused=pz}setLeft((tPrep+tSit-p)*1000);if(cfg.every)run.lastBell=Math.floor((p-tPrep)/(cfg.every*60))}
+  if(run.paused){const l=run.left/1000;show(l);if(run.phase==='sit')$('enso').setAttribute('d',enso(1-l/tSit))}
+  try{navigator.mediaSession.setPositionState({duration:track.duration,position:p,playbackRate:1})}catch{}}
 function stopTrack(){try{track.pause()}catch{}useTrack=false;if(trackURL){URL.revokeObjectURL(trackURL);trackURL=null;track.removeAttribute('src')}}
 
 $('bellb').onclick=()=>{audio();bi=(bi+1)%BELLS.length;store.set('bell',bi);drawBell();note(BELLS[bi].name);bell(1,true)};
