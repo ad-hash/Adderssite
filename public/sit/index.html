@@ -278,11 +278,12 @@ function seek(p){if(!trackURL||!run.phase||run.phase==='done')return;const pz=ru
   if(p<tPrep){if(run.phase!=='prep'){begin('prep',tPrep);run.paused=pz}setLeft((tPrep-p)*1000)}
   else{if(run.phase!=='sit'){begin('sit',tSit);run.paused=pz}setLeft((tPrep+tSit-p)*1000);if(cfg.every)run.lastBell=Math.floor((p-tPrep)/(cfg.every*60))}
   if(run.paused){const l=run.left/1000;show(l);if(run.phase==='sit')$('enso').setAttribute('d',enso(1-l/tSit))}
-  try{navigator.mediaSession.setPositionState({duration:track.duration,position:p,playbackRate:1})}catch{}}
+  /* same duration as syncPos, or the lock-screen bar resizes on every scrub */
+  try{navigator.mediaSession.setPositionState({duration:tPrep+tSit,position:p,playbackRate:1})}catch{}}
 /* lock screen shows the sit itself: its length and where you are, from the audio's own clock */
 function syncPos(){try{if(trackURL)navigator.mediaSession.setPositionState({duration:tPrep+tSit,position:Math.min(tPrep+tSit,track.currentTime||0),playbackRate:1})}catch{}}
 /* rAF stops when the phone is locked, but the audio keeps going: report its position from the audio's own events */
-track.addEventListener('timeupdate',()=>{if(run.phase&&!run.paused)syncPos()});
+track.addEventListener('timeupdate',()=>{if(run.phase&&!run.paused&&!track.seeking)syncPos()});
 /* back from the lock screen: if the OS paused the audio, resume it; if it won't, pause the sit where the audio is, so timer and track agree */
 function recover(){if(!useTrack||!trackURL||!run.phase||run.paused||run.phase==='done'||!track.paused)return;
   track.play().then(syncPos,()=>{const p=track.currentTime||0,left=p<tPrep?tPrep-p+tSit:tPrep+tSit-p;
@@ -376,7 +377,7 @@ $('reset').onclick=()=>{if(run.phase==='sit'){const sat=(cfg.len*60000-(run.paus
 
 let lastPos=0;
 function tick(){
-  if(useTrack&&run.phase&&!run.paused&&run.phase!=='done'&&!track.paused&&track.currentTime>0){
+  if(useTrack&&run.phase&&!run.paused&&run.phase!=='done'&&!track.paused&&!track.seeking&&track.currentTime>0){
     const p=track.currentTime;run.end=Date.now()+((p<tPrep?tPrep:tPrep+tSit)-p)*1000;
     if(Date.now()-lastPos>5000){lastPos=Date.now();syncPos()}}
   if(run.phase&&!run.paused&&run.phase!=='done'){
