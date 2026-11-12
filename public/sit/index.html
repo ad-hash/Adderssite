@@ -249,7 +249,7 @@ function buildMp3(prep,sit,every,b){
 }
 addEventListener('load',()=>setTimeout(prepMp3,300));
 let mp3Failed=false;
-track.addEventListener('error',()=>{if(track.src&&track.src===trackURL&&trackIsMp3&&!mp3Failed){mp3Failed=true;const pos=0;const url=buildTrack(tPrep,tSit,cfg.every,BELLS[bi]);URL.revokeObjectURL(trackURL);trackURL=url;trackIsMp3=false;track.src=url;track.play().catch(()=>{useTrack=false})}});
+track.addEventListener('error',()=>{if(track.src&&track.src===trackURL&&trackIsMp3&&!mp3Failed){mp3Failed=true;const pos=track.currentTime||0;const url=buildTrack(tPrep,tSit,cfg.every,BELLS[bi]);URL.revokeObjectURL(trackURL);trackURL=url;trackIsMp3=false;track.src=url;track.addEventListener('loadedmetadata',function k(){track.removeEventListener('loadedmetadata',k);try{track.currentTime=pos}catch{}});track.play().catch(()=>{useTrack=false})}});
 let trackIsMp3=false;
 function startTrack(prep,sit){
   stopTrack();const b=BELLS[bi];if(!b.parts.length)return;
