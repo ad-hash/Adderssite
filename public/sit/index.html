@@ -172,16 +172,44 @@ let ac;
 function audio(){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume()}catch{}}
 function tone(t,f,g,dec,type='sine'){const o=ac.createOscillator(),v=ac.createGain();o.type=type;o.frequency.value=f;v.gain.setValueAtTime(0,t);v.gain.linearRampToValueAtTime(g,t+.008);v.gain.exponentialRampToValueAtTime(.0001,t+dec);o.connect(v).connect(ac.destination);o.start(t);o.stop(t+dec+.1);return o}
 const BELLS=[
-  {name:'BOWL',gap:2.2,play:t=>[[196,.32],[392.8,.14],[588,.08],[812,.05]].forEach(([f,g])=>tone(t,f,g,7*(196/f)**.4))},
-  {name:'TEMPLE',gap:3,play:t=>[[110,.38],[221,.16],[331,.09],[497,.05]].forEach(([f,g])=>tone(t,f,g,9*(110/f)**.35))},
-  {name:'CHIME',gap:1.4,play:t=>[[784,.16],[1568,.07],[2352,.04]].forEach(([f,g])=>tone(t,f,g,3.2*(784/f)**.5))},
-  {name:'WOOD',gap:.45,play:t=>{const o=tone(t,880,.5,.12,'triangle');o.frequency.exponentialRampToValueAtTime(620,t+.1);tone(t,1760,.08,.05)}},
-  {name:'SILENT',gap:0,play:()=>{}}];
+  {name:'BOWL',gap:2.2,parts:[[196,.32],[392.8,.14],[588,.08],[812,.05]].map(([f,g])=>[f,g,7*(196/f)**.4])},
+  {name:'TEMPLE',gap:3,parts:[[110,.38],[221,.16],[331,.09],[497,.05]].map(([f,g])=>[f,g,9*(110/f)**.35])},
+  {name:'CHIME',gap:1.4,parts:[[784,.16],[1568,.07],[2352,.04]].map(([f,g])=>[f,g,3.2*(784/f)**.5])},
+  {name:'WOOD',gap:.45,parts:[[760,.5,.14],[1760,.08,.05]]},
+  {name:'SILENT',gap:0,parts:[]}];
 let bi=Math.max(0,Math.min(store.get('bell',0),BELLS.length-1));
 function drawBell(){$('bellg').innerHTML='<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 21h4"/>'+(BELLS[bi].name==='SILENT'?'<path d="M3.5 3.5l17 17"/>':'')}
 drawBell();
-function bell(n=1){if(!ac)return;const b=BELLS[bi];for(let s=0;s<n;s++)b.play(ac.currentTime+.02+s*b.gap)}
-$('bellb').onclick=()=>{audio();bi=(bi+1)%BELLS.length;store.set('bell',bi);drawBell();note(BELLS[bi].name);bell()};
+function bell(n=1,force){if(!ac||(useTrack&&!force))return;const b=BELLS[bi];for(let s=0;s<n;s++)b.parts.forEach(([f,g,d])=>tone(ac.currentTime+.02+s*b.gap,f,g,d))}
+
+/* the whole sit as one audio track (silence with the bells baked in), so bells still ring when the phone is locked */
+const SR=8000, track=new Audio();track.preload='auto';track.setAttribute('playsinline','');
+let useTrack=false, trackURL=null;
+function buildTrack(prep,sit,every,b){
+  const pad=b.gap*2+Math.max(...b.parts.map(p=>p[2]))+1, n=Math.ceil((prep+sit+pad)*SR), buf=new Uint8Array(44+n);
+  const d=new DataView(buf.buffer),w=(o,str)=>[...str].forEach((c,i)=>buf[o+i]=c.charCodeAt(0));
+  w(0,'RIFF');d.setUint32(4,36+n,true);w(8,'WAVEfmt ');d.setUint32(16,16,true);d.setUint16(20,1,true);d.setUint16(22,1,true);
+  d.setUint32(24,SR,true);d.setUint32(28,SR,true);d.setUint16(32,1,true);d.setUint16(34,8,true);w(36,'data');d.setUint32(40,n,true);
+  buf.fill(128,44);
+  const strike=t0=>b.parts.forEach(([f,g,dec])=>{const a=Math.floor(t0*SR),len=Math.min(n-a,Math.ceil(dec*SR)),k=Math.log(1e-4)/dec;
+    for(let i=0;i<len;i++){const t=i/SR,v=g*Math.min(1,t/.008)*Math.exp(k*t)*Math.sin(2*Math.PI*f*t),p=44+a+i;buf[p]=Math.max(0,Math.min(255,buf[p]+Math.round(v*127)))}});
+  strike(prep);
+  if(every)for(let t=every*60;t<sit-1;t+=every*60)strike(prep+t);
+  for(let s=0;s<3;s++)strike(prep+sit+s*b.gap);
+  return URL.createObjectURL(new Blob([buf],{type:'audio/wav'}));
+}
+function startTrack(prep,sit){
+  stopTrack();const b=BELLS[bi];if(!b.parts.length)return;
+  try{trackURL=buildTrack(prep,sit,cfg.every,b);track.src=trackURL;const p=track.play();useTrack=true;
+    if(p)p.catch(()=>{useTrack=false;bell()});
+    if('mediaSession' in navigator){navigator.mediaSession.metadata=new MediaMetadata({title:`Sit · ${cfg.len} min`,artist:'Adders OS'});
+      navigator.mediaSession.setActionHandler('play',()=>{if(run.paused)$('go').click()});
+      navigator.mediaSession.setActionHandler('pause',()=>{if(run.phase&&!run.paused&&run.phase!=='done')$('go').click()})}
+  }catch{useTrack=false}
+}
+function stopTrack(){try{track.pause()}catch{}useTrack=false;if(trackURL){URL.revokeObjectURL(trackURL);trackURL=null;track.removeAttribute('src')}}
+
+$('bellb').onclick=()=>{audio();bi=(bi+1)%BELLS.length;store.set('bell',bi);drawBell();note(BELLS[bi].name);bell(1,true)};
 
 /* screen stays awake the whole time the page is open */
 let lock;
@@ -248,17 +276,18 @@ const run={phase:null,paused:false,end:0,left:0,lastBell:0};
 const pad=n=>String(n).padStart(2,'0');
 function show(sec){const s=Math.max(0,Math.ceil(sec));$('mm').textContent=pad(Math.floor(s/60));$('ss').textContent=pad(s%60)}
 function mode(m){$('clock').classList.toggle('prep',m==='prep');lenVis(m==='idle')}
-function idle(){run.phase=null;run.paused=false;show(cfg.len*60);showLen();$('enso').setAttribute('d','');mode('idle');$('go').textContent='START';$('setwin').classList.remove('locked')}
+function idle(){stopTrack();run.phase=null;run.paused=false;show(cfg.len*60);showLen();$('enso').setAttribute('d','');mode('idle');$('go').textContent='START';$('setwin').classList.remove('locked')}
 function begin(phase,secs){run.phase=phase;run.paused=false;run.end=Date.now()+secs*1000;run.lastBell=0;mode(phase)}
 
 $('go').onclick=()=>{
   audio();catAway();
   if(!run.phase){
     $('setwin').classList.add('locked');$('go').textContent='PAUSE';
+    startTrack(cfg.prep,cfg.len*60);
     if(cfg.prep){begin('prep',cfg.prep)}else{begin('sit',cfg.len*60);bell()}
   }else if(run.phase==='done')idle();
-  else if(run.paused){run.paused=false;run.end=Date.now()+run.left;$('go').textContent='PAUSE'}
-  else{run.paused=true;run.left=run.end-Date.now();$('go').textContent='RESUME'}
+  else if(run.paused){run.paused=false;run.end=Date.now()+run.left;$('go').textContent='PAUSE';if(trackURL)track.play().catch(()=>{})}
+  else{run.paused=true;run.left=run.end-Date.now();$('go').textContent='RESUME';if(trackURL)track.pause()}
 };
 $('reset').onclick=()=>{if(run.phase==='sit'){const sat=(cfg.len*60000-(run.paused?run.left:run.end-Date.now()))/60000;if(sat>=1)log(Math.floor(sat))}idle()};
 
