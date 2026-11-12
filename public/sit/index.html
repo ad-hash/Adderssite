@@ -261,10 +261,7 @@ function startTrack(prep,sit){
       const h=(a,f)=>{try{ms.setActionHandler(a,f)}catch{}};
       h('play',()=>{if(run.paused)$('go').click()});
       h('pause',()=>{if(run.phase&&!run.paused&&run.phase!=='done')$('go').click()});
-      h('seekto',d=>seek(d.seekTime));
-      h('seekbackward',d=>seek(track.currentTime-(d.seekOffset||15)));
-      h('seekforward',d=>seek(track.currentTime+(d.seekOffset||15)));
-      h('previoustrack',null);h('nexttrack',null);
+      ['seekto','seekbackward','seekforward','previoustrack','nexttrack'].forEach(a=>h(a,null));
       syncPos();}
   }catch{useTrack=false}
 }
