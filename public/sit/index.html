@@ -53,14 +53,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;-webki
 .clock.drag{cursor:grab}
 .clock svg{position:absolute;inset:0;width:100%;height:100%}
 .read{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
-.read{transition:opacity .5s}
+.read{transition:opacity .25s}
 .read.hide{opacity:0}
-.clock .cat{position:absolute;inset:auto;left:50%;top:50%;width:46%;height:auto;transform:translate(-50%,-44%) scale(.94);opacity:0;transition:opacity .7s ease,transform .9s ease;pointer-events:none}
+.clock .cat{position:absolute;inset:auto;left:50%;top:50%;width:26%;height:auto;shape-rendering:crispEdges;transform:translate(-50%,-50%) scale(.9);opacity:0;transition:opacity .25s ease,transform .25s ease;pointer-events:none}
 .clock .cat.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
-.cat path,.cat ellipse{stroke:var(--ink);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
-.cat .m1,.cat .m2,.cat .bl{transition:opacity .5s}
-.cat .m2,.cat .bl{opacity:0}
-.cat.smile .m1{opacity:0}.cat.smile .m2{opacity:1}.cat.smile .bl{opacity:.45}
+
 .time{font-family:var(--pixel);color:var(--acc-ink);display:flex;align-items:baseline;line-height:1}
 .time b{font-weight:700;font-size:clamp(46px,15vw,60px)}
 .time i{font-style:normal;font-size:15px;margin:0 6px 0 2px}
@@ -117,21 +114,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;-webki
         <div class="read" id="read">
           <div class="time"><b id="mm">10</b><i>m</i><span id="ss">00</span><i>s</i></div>
         </div>
-        <svg class="cat" id="cat" viewBox="0 0 100 100" aria-hidden="true">
-          <ellipse cx="50" cy="90" rx="30" ry="5.5" fill="var(--acc)"/>
-          <path d="M71 86c11 1 15-7 9-13" fill="none"/>
-          <path d="M29 87c-4-19 5-34 21-34s25 15 21 34z" fill="var(--win)"/>
-          <path d="M34 37c0-8 2-14 3-21l8 8c3-1 7-1 10 0l8-8c1 7 3 13 3 21 0 10-7 16-16 16s-16-6-16-16z" fill="var(--win)"/>
-          <path d="M39.5 37.5q3.2 2.6 6.4 0M54.1 37.5q3.2 2.6 6.4 0" fill="none"/>
-          <path d="M48.6 41.5h2.8l-1.4 1.6z" fill="var(--ink)" style="stroke-width:1.2"/>
-          <path class="m1" d="M47.5 46h5" fill="none"/>
-          <path class="m2" d="M46 45.2q2 2.4 4 0q2 2.4 4 0" fill="none"/>
-          <ellipse class="bl" cx="39" cy="43.5" rx="3.2" ry="1.8" fill="var(--acc)" style="stroke:none"/>
-          <ellipse class="bl" cx="61" cy="43.5" rx="3.2" ry="1.8" fill="var(--acc)" style="stroke:none"/>
-          <path d="M38 79c6 5 18 5 24 0" fill="none"/>
-          <ellipse cx="45" cy="81" rx="5.5" ry="3.6" fill="var(--win)"/>
-          <ellipse cx="55" cy="81" rx="5.5" ry="3.6" fill="var(--win)"/>
-        </svg>
+        <svg class="cat" id="cat" viewBox="0 0 16 14" aria-hidden="true"></svg>
       </div>
       <div class="btns">
         <button class="btn go" id="go">START</button>
@@ -210,12 +193,14 @@ document.querySelectorAll('.chips').forEach(box=>{const k=box.dataset.k;
 function paint(){document.querySelectorAll('.chips').forEach(box=>box.querySelectorAll('.chip').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.v===cfg[box.dataset.k])))}
 paint();
 
-/* cat: appears, smiles, then fades away */
+/* cat: a pixel face that pops in for about a second */
+const CAT=['.K............K.','.KK..........KK.','.KWK........KWK.','.KWWKKKKKKKKWWK.','.KWWWWWWWWWWWWK.','KWWWWWWWWWWWWWWK','KWWWKWWWWWWKWWWK','KWWKWKWWWWKWKWWK','KWWWWWWWWWWWWWWK','KWAAWWWAAWWWAAWK','KWWWWKWWWWKWWWWK','.KWWWWKKKKWWWWK.','.KWWWWWWWWWWWWK.','..KKKKKKKKKKKK..'];
+const CC={K:'var(--ink)',W:'var(--win)',A:'var(--acc)'};
+$('cat').innerHTML=CAT.flatMap((row,y)=>[...row].map((c,x)=>c==='.'?'':`<rect x="${x}" y="${y}" width="1.02" height="1.02" fill="${CC[c]}"/>`)).join('');
 let catT=[];
-function catVisit(){catAway();const c=$('cat');$('read').classList.add('hide');
-  catT=[setTimeout(()=>c.classList.add('on'),150),setTimeout(()=>c.classList.add('smile'),1300),
-        setTimeout(()=>c.classList.remove('on'),3200),setTimeout(()=>{c.classList.remove('smile');$('read').classList.remove('hide')},3700)]}
-function catAway(){catT.forEach(clearTimeout);catT=[];$('cat').classList.remove('on','smile');$('read').classList.remove('hide')}
+function catVisit(){catAway();$('read').classList.add('hide');
+  catT=[setTimeout(()=>$('cat').classList.add('on'),120),setTimeout(()=>$('cat').classList.remove('on'),1120),setTimeout(()=>$('read').classList.remove('hide'),1300)]}
+function catAway(){catT.forEach(clearTimeout);catT=[];$('cat').classList.remove('on');$('read').classList.remove('hide')}
 
 /* ensō: classic hairline. Heavy start, thins to a hairline that passes just outside the start */
 const sm=(a,b,x)=>{x=Math.min(1,Math.max(0,(x-a)/(b-a)));return x*x*(3-2*x)};
