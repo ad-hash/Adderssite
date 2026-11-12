@@ -281,6 +281,8 @@ function seek(p){if(!trackURL||!run.phase||run.phase==='done')return;const pz=ru
   try{navigator.mediaSession.setPositionState({duration:track.duration,position:p,playbackRate:1})}catch{}}
 /* lock screen shows the sit itself: its length and where you are, from the audio's own clock */
 function syncPos(){try{if(trackURL)navigator.mediaSession.setPositionState({duration:tPrep+tSit,position:Math.min(tPrep+tSit,track.currentTime||0),playbackRate:1})}catch{}}
+/* rAF stops when the phone is locked, but the audio keeps going: report its position from the audio's own events */
+track.addEventListener('timeupdate',()=>{if(run.phase&&!run.paused)syncPos()});
 /* back from the lock screen: if the OS paused the audio, resume it; if it won't, pause the sit where the audio is, so timer and track agree */
 function recover(){if(!useTrack||!trackURL||!run.phase||run.paused||run.phase==='done'||!track.paused)return;
   track.play().then(syncPos,()=>{const p=track.currentTime||0,left=p<tPrep?tPrep-p+tSit:tPrep+tSit-p;
