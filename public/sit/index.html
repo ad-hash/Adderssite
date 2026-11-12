@@ -281,6 +281,10 @@ function seek(p){if(!trackURL||!run.phase||run.phase==='done')return;const pz=ru
   try{navigator.mediaSession.setPositionState({duration:track.duration,position:p,playbackRate:1})}catch{}}
 /* lock screen shows the sit itself: its length and where you are, from the audio's own clock */
 function syncPos(){try{if(trackURL)navigator.mediaSession.setPositionState({duration:tPrep+tSit,position:Math.min(tPrep+tSit,track.currentTime||0),playbackRate:1})}catch{}}
+/* back from the lock screen: if the OS paused the audio, resume it; if it won't, pause the sit where the audio is, so timer and track agree */
+function recover(){if(!useTrack||!trackURL||!run.phase||run.paused||run.phase==='done'||!track.paused)return;
+  track.play().then(syncPos,()=>{const p=track.currentTime||0,left=p<tPrep?tPrep-p+tSit:tPrep+tSit-p;
+    run.paused=true;run.left=left*1000;show(left);if(run.phase==='sit')$('enso').setAttribute('d',enso(1-left/tSit));$('go').textContent='RESUME';syncPos()})}
 function stopTrack(){try{track.pause()}catch{}useTrack=false;if(trackURL){URL.revokeObjectURL(trackURL);trackURL=null;track.removeAttribute('src')}}
 
 $('bellb').onclick=()=>{audio();bi=(bi+1)%BELLS.length;store.set('bell',bi);drawBell();note(BELLS[bi].name);bell(1,true);setTimeout(prepMp3,50)};
@@ -292,7 +296,7 @@ async function wake(){try{if(!lock&&navigator.wakeLock&&document.visibilityState
 const ns=$('nosleep');
 ns.addEventListener('timeupdate',()=>{if(ns.currentTime>.5)ns.currentTime=Math.random()*.1});
 function keepOn(){wake();try{const p=ns.play();if(p)p.catch(()=>{})}catch{}}
-wake();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')keepOn()});
+wake();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){keepOn();recover()}});
 document.addEventListener('pointerdown',()=>{audio();keepOn()});
 document.addEventListener('click',keepOn);
 
