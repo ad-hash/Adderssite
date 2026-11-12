@@ -55,7 +55,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;-webki
 .read{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
 .read{transition:opacity .25s}
 .read.hide{opacity:0}
-.clock .cat{position:absolute;inset:auto;left:50%;top:50%;width:26%;height:auto;shape-rendering:crispEdges;transform:translate(-50%,-50%) scale(.9);opacity:0;transition:opacity .25s ease,transform .25s ease;pointer-events:none}
+.clock .cat{position:absolute;inset:auto;left:50%;top:50%;width:28%;height:auto;shape-rendering:crispEdges;transform:translate(-50%,-50%) scale(.9);opacity:0;transition:opacity .25s ease,transform .25s ease;pointer-events:none}
 .clock .cat.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
 
 .time{font-family:var(--pixel);color:var(--acc-ink);display:flex;align-items:baseline;line-height:1}
@@ -114,7 +114,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;-webki
         <div class="read" id="read">
           <div class="time"><b id="mm">10</b><i>m</i><span id="ss">00</span><i>s</i></div>
         </div>
-        <svg class="cat" id="cat" viewBox="0 0 16 14" aria-hidden="true"></svg>
+        <svg class="cat" id="cat" viewBox="0 0 16 19" aria-hidden="true"></svg>
       </div>
       <div class="btns">
         <button class="btn go" id="go">START</button>
@@ -193,8 +193,8 @@ document.querySelectorAll('.chips').forEach(box=>{const k=box.dataset.k;
 function paint(){document.querySelectorAll('.chips').forEach(box=>box.querySelectorAll('.chip').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.v===cfg[box.dataset.k])))}
 paint();
 
-/* cat: a pixel face that pops in for about a second */
-const CAT=['.K............K.','.KK..........KK.','.KWK........KWK.','.KWWKKKKKKKKWWK.','.KWWWWWWWWWWWWK.','KWWWWWWWWWWWWWWK','KWWWKWWWWWWKWWWK','KWWKWKWWWWKWKWWK','KWWWWWWWWWWWWWWK','KWAAWWWAAWWWAAWK','KWWWWKWWWWKWWWWK','.KWWWWKKKKWWWWK.','.KWWWWWWWWWWWWK.','..KKKKKKKKKKKK..'];
+/* cat: a meditating pixel cat that pops in for about a second */
+const CAT=['...K........K...','...KK......KK...','...KWK....KWK...','...KWWKKKKWWK...','..KWWWWWWWWWWK..','..KWKKWWWWKKWK..','..KWWWWAAWWWWK..','..KWWKWWWWKWWK..','...KWWKKKKWWK...','....KKWWWWKK....','...KWWWWWWWWK...','..KWWWWWWWWWWK..','..KWWWWWWWWWWK..','.KWWWWWWWWWWWWK.','.KWWWKKKKKKWWWK.','.KWWKWWWWWWKWWK.','..KKKKKKKKKKKK..','.AAAAAAAAAAAAAA.','..AAAAAAAAAAAA..'];
 const CC={K:'var(--ink)',W:'var(--win)',A:'var(--acc)'};
 $('cat').innerHTML=CAT.flatMap((row,y)=>[...row].map((c,x)=>c==='.'?'':`<rect x="${x}" y="${y}" width="1.02" height="1.02" fill="${CC[c]}"/>`)).join('');
 let catT=[];
