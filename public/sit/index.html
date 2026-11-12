@@ -185,7 +185,7 @@ function bell(n=1,force){if(!ac||(useTrack&&!force))return;const b=BELLS[bi];for
 /* the whole sit as one audio track (silence with the bells baked in), so bells still ring when the phone is locked */
 const SR=8000, track=new Audio();track.preload='auto';track.setAttribute('playsinline','');
 let useTrack=false, trackURL=null, tPrep=0, tSit=0;
-function buildTrack(prep,sit,every,b){
+function buildTrack16(prep,sit,every,b){
   const pad=b.gap*2+Math.max(...b.parts.map(p=>p[2]))+1, n=Math.ceil((prep+sit+pad)*SR), ab=new ArrayBuffer(44+n*2);
   const d=new DataView(ab),u=new Uint8Array(ab),pcm=new Int16Array(ab,44,n),w=(o,str)=>[...str].forEach((c,i)=>u[o+i]=c.charCodeAt(0));
   w(0,'RIFF');d.setUint32(4,36+n*2,true);w(8,'WAVEfmt ');d.setUint32(16,16,true);d.setUint16(20,1,true);d.setUint16(22,1,true);
@@ -197,6 +197,25 @@ function buildTrack(prep,sit,every,b){
   for(let s=0;s<3;s++)strike(prep+sit+s*b.gap);
   return URL.createObjectURL(new Blob([ab],{type:'audio/wav'}));
 }
+/* μ-law: 8 bits per sample but most of the detail on quiet sounds, so the bell fades stay clean at half the size */
+function mulaw(x){let s=Math.max(-32635,Math.min(32635,Math.round(x*32767)));const sign=s<0?0x80:0;if(sign)s=-s;s+=0x84;let e=7;for(let m=0x4000;(s&m)===0&&e>0;e--,m>>=1);return ~(sign|(e<<4)|((s>>(e+3))&15))&255}
+function wavMulaw(n){const ab=new ArrayBuffer(58+n),d=new DataView(ab),u=new Uint8Array(ab),w=(o,str)=>[...str].forEach((c,i)=>u[o+i]=c.charCodeAt(0));
+  w(0,'RIFF');d.setUint32(4,50+n,true);w(8,'WAVEfmt ');d.setUint32(16,18,true);d.setUint16(20,7,true);d.setUint16(22,1,true);d.setUint32(24,SR,true);d.setUint32(28,SR,true);d.setUint16(32,1,true);d.setUint16(34,8,true);d.setUint16(36,0,true);
+  w(38,'fact');d.setUint32(42,4,true);d.setUint32(46,n,true);w(50,'data');d.setUint32(54,n,true);const data=new Uint8Array(ab,58,n);data.fill(255);return{ab,data}}
+function buildTrackMu(prep,sit,every,b){
+  const ring=Math.max(...b.parts.map(p=>p[2])), pad=b.gap*2+ring+1, n=Math.ceil((prep+sit+pad)*SR), {ab,data}=wavMulaw(n);
+  const times=[prep];if(every)for(let t=every*60;t<sit-1;t+=every*60)times.push(prep+t);for(let k=0;k<3;k++)times.push(prep+sit+k*b.gap);
+  const segs=[];times.forEach(t=>{const a=Math.floor(t*SR),z=Math.min(n,a+Math.ceil(ring*SR));const l=segs[segs.length-1];if(l&&a<=l.z){l.z=Math.max(l.z,z);l.ts.push(t)}else segs.push({a,z,ts:[t]})});
+  segs.forEach(({a,z,ts})=>{const buf=new Float32Array(z-a),fade=Math.floor(.05*SR);
+    ts.forEach(t0=>b.parts.forEach(([f,g,dec])=>{const o=Math.floor(t0*SR)-a,len=Math.min(buf.length-o,Math.ceil(dec*SR)),k=Math.log(1e-4)/dec;
+      for(let i=0;i<len;i++){const t=i/SR;buf[o+i]+=g*Math.min(1,t/.008)*Math.exp(k*t)*Math.min(1,(len-i)/fade)*Math.sin(2*Math.PI*f*t)}}));
+    for(let i=0;i<buf.length;i++)data[a+i]=mulaw(buf[i])});
+  return URL.createObjectURL(new Blob([ab],{type:'audio/wav'}));
+}
+/* check once that this phone can play μ-law; if not, use the 16-bit track */
+let muOK=false;
+try{const t=new (window.AudioContext||window.webkitAudioContext)(),{ab}=wavMulaw(800);const p=t.decodeAudioData(ab,()=>{muOK=true;t.close()},()=>t.close());if(p&&p.catch)p.catch(()=>{})}catch{}
+function buildTrack(prep,sit,every,b){return muOK?buildTrackMu(prep,sit,every,b):buildTrack16(prep,sit,every,b)}
 function startTrack(prep,sit){
   stopTrack();const b=BELLS[bi];if(!b.parts.length)return;
   try{trackURL=buildTrack(prep,sit,cfg.every,b);track.src=trackURL;const p=track.play();useTrack=true;
