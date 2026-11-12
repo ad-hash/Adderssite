@@ -183,7 +183,7 @@ drawBell();
 function bell(n=1,force){if(!ac||(useTrack&&!force))return;const b=BELLS[bi];for(let s=0;s<n;s++)b.parts.forEach(([f,g,d])=>tone(ac.currentTime+.02+s*b.gap,f,g,d))}
 
 /* the whole sit as one audio track (silence with the bells baked in), so bells still ring when the phone is locked */
-const SR=8000, track=new Audio();track.preload='auto';track.setAttribute('playsinline','');
+const SR=22050, track=new Audio();track.preload='auto';track.setAttribute('playsinline','');
 let useTrack=false, trackURL=null, tPrep=0, tSit=0;
 function buildTrack16(prep,sit,every,b){
   const pad=b.gap*2+Math.max(...b.parts.map(p=>p[2]))+1, n=Math.ceil((prep+sit+pad)*SR), ab=new ArrayBuffer(44+n*2);
