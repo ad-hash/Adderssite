@@ -261,9 +261,8 @@ function startTrack(prep,sit){
       const h=(a,f)=>{try{ms.setActionHandler(a,f)}catch{}};
       h('play',()=>{if(run.paused)$('go').click()});
       h('pause',()=>{if(run.phase&&!run.paused&&run.phase!=='done')$('go').click()});
-      h('seekto',d=>seek(d.seekTime));
-      h('seekbackward',d=>seek(track.currentTime-(d.seekOffset||15)));
-      h('seekforward',d=>seek(track.currentTime+(d.seekOffset||15)));}
+      ['seekto','seekbackward','seekforward','previoustrack','nexttrack'].forEach(a=>h(a,null));
+      syncPos();}
   }catch{useTrack=false}
 }
 /* lock-screen artwork: the meditating cat, drawn crisp at 512px */
@@ -277,6 +276,8 @@ function seek(p){if(!trackURL||!run.phase||run.phase==='done')return;const pz=ru
   else{if(run.phase!=='sit'){begin('sit',tSit);run.paused=pz}setLeft((tPrep+tSit-p)*1000);if(cfg.every)run.lastBell=Math.floor((p-tPrep)/(cfg.every*60))}
   if(run.paused){const l=run.left/1000;show(l);if(run.phase==='sit')$('enso').setAttribute('d',enso(1-l/tSit))}
   try{navigator.mediaSession.setPositionState({duration:track.duration,position:p,playbackRate:1})}catch{}}
+/* lock screen shows the sit itself: its length and where you are, from the audio's own clock */
+function syncPos(){try{if(trackURL)navigator.mediaSession.setPositionState({duration:tPrep+tSit,position:Math.min(tPrep+tSit,track.currentTime||0),playbackRate:1})}catch{}}
 function stopTrack(){try{track.pause()}catch{}useTrack=false;if(trackURL){URL.revokeObjectURL(trackURL);trackURL=null;track.removeAttribute('src')}}
 
 $('bellb').onclick=()=>{audio();bi=(bi+1)%BELLS.length;store.set('bell',bi);drawBell();note(BELLS[bi].name);bell(1,true);setTimeout(prepMp3,50)};
@@ -356,12 +357,16 @@ $('go').onclick=()=>{
     startTrack(cfg.prep,cfg.len*60);
     if(cfg.prep){begin('prep',cfg.prep)}else{begin('sit',cfg.len*60);bell()}
   }else if(run.phase==='done')idle();
-  else if(run.paused){run.paused=false;run.end=Date.now()+run.left;$('go').textContent='PAUSE';if(trackURL)track.play().catch(()=>{})}
-  else{run.paused=true;run.left=run.end-Date.now();$('go').textContent='RESUME';if(trackURL)track.pause()}
+  else if(run.paused){run.paused=false;run.end=Date.now()+run.left;$('go').textContent='PAUSE';if(trackURL)track.play().then(syncPos,()=>{})}
+  else{run.paused=true;run.left=run.end-Date.now();$('go').textContent='RESUME';if(trackURL){track.pause();syncPos()}}
 };
 $('reset').onclick=()=>{if(run.phase==='sit'){const sat=(cfg.len*60000-(run.paused?run.left:run.end-Date.now()))/60000;if(sat>=1)log(Math.floor(sat))}idle()};
 
+let lastPos=0;
 function tick(){
+  if(useTrack&&run.phase&&!run.paused&&run.phase!=='done'&&!track.paused&&track.currentTime>0){
+    const p=track.currentTime;run.end=Date.now()+((p<tPrep?tPrep:tPrep+tSit)-p)*1000;
+    if(Date.now()-lastPos>5000){lastPos=Date.now();syncPos()}}
   if(run.phase&&!run.paused&&run.phase!=='done'){
     const left=(run.end-Date.now())/1000;
     if(run.phase==='prep'){show(left);if(left<=0){begin('sit',cfg.len*60);bell()}}
