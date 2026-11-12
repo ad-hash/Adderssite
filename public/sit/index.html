@@ -194,11 +194,12 @@ function paint(){document.querySelectorAll('.chips').forEach(box=>box.querySelec
 paint();
 
 /* cat: a meditating pixel cat that pops in for about a second */
+const CAT_END=['.K............K.','.KK..........KK.','.KWK........KWK.','.KWWKKKKKKKKWWK.','.KWWWWWWWWWWWWK.','KWWWWWWWWWWWWWWK','KWWWKWWWWWWKWWWK','KWWKWKWWWWKWKWWK','KWWWWWWWWWWWWWWK','KWAAWWWAAWWWAAWK','KWWWWKWWWWKWWWWK','.KWWWWKKKKWWWWK.','.KWWWWWWWWWWWWK.','..KKKKKKKKKKKK..'];
 const CAT=['...K........K...','...KK......KK...','...KWK....KWK...','...KWWKKKKWWK...','..KWWWWWWWWWWK..','..KWKKWWWWKKWK..','..KWWWWAAWWWWK..','..KWWKWWWWKWWK..','...KWWKKKKWWK...','....KKWWWWKK....','...KWWWWWWWWK...','..KWWWWWWWWWWK..','..KWWWWWWWWWWK..','.KWWWWWWWWWWWWK.','.KWWWKKKKKKWWWK.','.KWWKWWWWWWKWWK.','..KKKKKKKKKKKK..','.AAAAAAAAAAAAAA.','..AAAAAAAAAAAA..'];
 const CC={K:'var(--ink)',W:'var(--win)',A:'var(--acc)'};
-$('cat').innerHTML=CAT.flatMap((row,y)=>[...row].map((c,x)=>c==='.'?'':`<rect x="${x}" y="${y}" width="1.02" height="1.02" fill="${CC[c]}"/>`)).join('');
+function drawCat(rows){const c=$('cat');c.setAttribute('viewBox',`0 0 16 ${rows.length}`);c.style.width=rows.length>16?'28%':'26%';c.innerHTML=rows.flatMap((row,y)=>[...row].map((ch,x)=>ch==='.'?'':`<rect x="${x}" y="${y}" width="1.02" height="1.02" fill="${CC[ch]}"/>`)).join('')}
 let catT=[];
-function catVisit(){catAway();$('read').classList.add('hide');
+function catVisit(end){catAway();drawCat(end?CAT_END:CAT);$('read').classList.add('hide');
   catT=[setTimeout(()=>$('cat').classList.add('on'),120),setTimeout(()=>$('cat').classList.remove('on'),1120),setTimeout(()=>$('read').classList.remove('hide'),1300)]}
 function catAway(){catT.forEach(clearTimeout);catT=[];$('cat').classList.remove('on');$('read').classList.remove('hide')}
 
@@ -260,7 +261,7 @@ function tick(){
       const total=cfg.len*60,el=total-left;
       show(left);$('enso').setAttribute('d',enso(Math.min(1,el/total)));
       if(cfg.every){const k=Math.floor(el/(cfg.every*60));if(k>run.lastBell&&left>1){run.lastBell=k;bell()}}
-      if(left<=0){run.phase='done';show(0);$('enso').setAttribute('d',enso(1));mode('done');bell(3);log(cfg.len);catVisit();$('go').textContent='AGAIN';$('setwin').classList.remove('locked')}
+      if(left<=0){run.phase='done';show(0);$('enso').setAttribute('d',enso(1));mode('done');bell(3);log(cfg.len);catVisit(true);$('go').textContent='AGAIN';$('setwin').classList.remove('locked')}
     }
   }
   requestAnimationFrame(tick);
