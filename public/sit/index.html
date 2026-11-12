@@ -240,7 +240,7 @@ document.addEventListener('click',keepOn);
 
 /* settings chips */
 const OPTS={every:[0,1,2,5,10],prep:[0,10,30]}, LABEL={every:v=>v?v+'m':'Off',prep:v=>v?v+'s':'None'};
-const cfg={len:Math.min(60,Math.max(1,store.get('len',10))),every:store.get('every',0),prep:store.get('prep',10)};
+const cfg={len:Math.min(60,Math.max(1,store.get('len',10))),every:store.get('every',0),prep:store.get('prep',0)};
 document.querySelectorAll('.chips').forEach(box=>{const k=box.dataset.k;
   OPTS[k].forEach(v=>{const b=document.createElement('button');b.className='chip';b.textContent=LABEL[k](v);b.dataset.v=v;b.onclick=()=>{cfg[k]=v;store.set(k,v);paint()};box.appendChild(b)})});
 function paint(){document.querySelectorAll('.chips').forEach(box=>box.querySelectorAll('.chip').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.v===cfg[box.dataset.k])))}
