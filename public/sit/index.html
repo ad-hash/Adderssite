@@ -298,7 +298,10 @@ async function wake(){try{if(!lock&&navigator.wakeLock&&document.visibilityState
 const ns=$('nosleep');
 ns.addEventListener('timeupdate',()=>{if(ns.currentTime>.5)ns.currentTime=Math.random()*.1});
 function keepOn(){wake();try{const p=ns.play();if(p)p.catch(()=>{})}catch{}}
-wake();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){keepOn();recover()}});
+wake();document.addEventListener('visibilitychange',()=>{
+  /* every time the screen goes off or comes back, re-state the playback and position so the lock screen does not reset */
+  if(useTrack&&run.phase&&run.phase!=='done'){try{navigator.mediaSession.playbackState=run.paused?'paused':'playing'}catch{}syncPos()}
+  if(document.visibilityState==='visible'){keepOn();recover()}});
 document.addEventListener('pointerdown',()=>{audio();keepOn()});
 document.addEventListener('click',keepOn);
 
