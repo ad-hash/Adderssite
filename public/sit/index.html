@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 :root{
-  --paper:#e8e2d4; --dots:#d3cbb9; --win:#efe9dc; --ink:#2b2622; --muted:#7a7166; --tile:#f3eee3; --bar:#1c1a18;
+  --paper:#e8e2d4; --dots:#d3cbb9; --win:#efe9dc; --ink:#2b2622; --muted:#7a7166; --tile:#f3eee3; --bar:#111;
   --acc:#b8532e; --acc-ink:#8f3b1f; --acc-hi:#d9764d;
   --pixel:"Silkscreen","Courier New",monospace; --mono:"Space Mono",ui-monospace,Menlo,monospace;
 }
@@ -17,7 +17,7 @@
 [data-theme="grass"]{--acc:#4f7d55;--acc-ink:#3a5e3f;--acc-hi:#82ab86}
 [data-theme="electric"]{--acc:#b08a2c;--acc-ink:#7d6118;--acc-hi:#d4b45c}
 [data-mode="grey"]{--paper:#cfcfca;--dots:#bdbdb7;--win:#dadad5;--ink:#262624;--muted:#6c6c67;--tile:#e1e1dc}
-[data-mode="dark"]{--paper:#141312;--dots:#26231f;--win:#1c1a18;--ink:#e6dfd3;--muted:#9a9187;--tile:#23201d;--bar:#0d0c0b;--acc:#c96a43;--acc-ink:#d98a63}
+[data-mode="dark"]{--paper:#141312;--dots:#26231f;--win:#1c1a18;--ink:#e6dfd3;--muted:#9a9187;--tile:#23201d;--bar:#000;--acc:#c96a43;--acc-ink:#d98a63}
 [data-mode="dark"][data-theme="water"]{--acc:#5d86b8;--acc-ink:#8aa8cf}
 [data-mode="dark"][data-theme="grass"]{--acc:#6b9a70;--acc-ink:#8fb894}
 [data-mode="dark"][data-theme="electric"]{--acc:#c9a446;--acc-ink:#d8bb6a}
@@ -28,9 +28,11 @@ body{margin:0;min-height:100vh;background:var(--paper);color:var(--ink);font-fam
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 
 .topbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:6px;height:44px;padding:0 6px 0 12px;background:var(--bar);color:#e9e3d6;border-bottom:3px solid var(--bar)}
-.home{display:flex;align-items:center;gap:8px;color:inherit;text-decoration:none}
-.logo{background:#e9e3d6;color:#1c1a18;font-family:var(--pixel);font-weight:700;font-size:13px;letter-spacing:.06em;padding:3px 6px}
-.tbt{font-family:var(--pixel);font-size:12px;letter-spacing:.12em;opacity:.75}
+.home{display:flex;align-items:center;color:inherit;text-decoration:none}
+.topbar{gap:10px}
+.logo{background:#f5f3ed;color:#111;font-family:var(--pixel);font-weight:700;font-size:13px;letter-spacing:.06em;padding:3px 6px}
+.home:active .logo{transform:translateY(1px)}
+.tbt{font-family:var(--pixel);font-size:13px;letter-spacing:.16em;text-transform:uppercase;white-space:nowrap}
 .sp{flex:1}
 .ib{width:36px;height:36px;display:grid;place-items:center;color:var(--acc-hi)}
 .ib svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -91,7 +93,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;-webki
 </head>
 <body>
 <header class="topbar">
-  <a class="home" href="https://adders.party/" aria-label="Back to adders.party"><span class="logo">&lt; SIT</span><span class="tbt">ADDERS OS</span></a>
+  <a class="home" href="https://adders.party/" aria-label="Back to adders.party" title="adders.party"><span class="logo">AG</span></a><span class="tbt">Sit</span>
   <span class="sp"></span>
   <button class="ib" id="el" aria-label="Change colour"><svg viewBox="0 0 24 24" id="elg"></svg></button>
   <button class="ib" id="bellb" aria-label="Change bell"><svg viewBox="0 0 24 24" id="bellg"></svg></button>
