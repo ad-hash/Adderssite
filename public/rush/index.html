@@ -724,17 +724,21 @@ function nickFor(s){const L=s.log||[];if(!L.length)return pick(['Ghost','Boots',
   if(late)return 'Photo Finish';if(avgM<=10)return 'Quickdraw';if(avgM>=45)return 'Marathon';if(avgSt>=3)return 'Checklist';if(early>=L.length*.6)return 'Early Bird';
   return {speedy:'Zoom',tough:'Iron',glutton:'Snacks',eager:'Keen'}[s.trait]||pick(['Ghost','Boots','Sparky','Ace','Tank'])}
 const dname=s=>{if(s.full){const [f,...l]=s.full.split(' ');return s.nick?`${f} "${s.nick}" ${l.join(' ')}`:s.full}return s.nick?`${s.name} "${s.nick}"`:s.name};
-function ensure(s){if(s.hue){s.hue=0;s.coat='classic'}if(!RARE.includes(s.coat)&&!LEGEND.includes(s.coat))s.coat='classic';if(!s.pers)s.pers=pick(PERS);if(!s.tic)s.tic=pick(TICS);if(!s.call)s.call=pick(CALLS);if(!s.catch)s.catch=makeCatch();if(!s.log)s.log=[];if(s.nick===undefined)s.nick=null;if(!s.born)s.born=Date.now()}
+function ensure(s){if(s.hue){s.hue=0;s.coat='classic'}if(s.coat!=='galaxy'&&!coatsFor(s.sp).includes(s.coat))s.coat='classic';if(!s.pers)s.pers=pick(PERS);if(!s.tic)s.tic=pick(TICS);if(!s.call)s.call=pick(CALLS);if(!s.catch)s.catch=makeCatch();if(!s.log)s.log=[];if(s.nick===undefined)s.nick=null;if(!s.born)s.born=Date.now()}
 
 
 const rankOf=xp=>{let r=1;XP_AT.forEach((v,i)=>{if(xp>=v)r=i+1});return r};
 const pct=xp=>{const r=rankOf(xp);return r>=5?100:Math.round((xp-XP_AT[r-1])/(XP_AT[r]-XP_AT[r-1])*100)};
 const SIZE=[70,79,87,94,100];
 /* coats: classic by default; rare 1 in 20, legendary 1 in 60. Only the body is recoloured, pre-rendered in img/coats */
-const RARE=['camo','tiger','noir'],LEGEND=['lava','galaxy','gold'];
-const coatTier=c=>RARE.includes(c)?'RARE':LEGEND.includes(c)?'LEGENDARY':'';
-const rollCoat=()=>{const r=Math.random();return r<1/60?pick(LEGEND):r<1/60+1/20?pick(RARE):'classic'};
-const coatOf=s=>(s.coat&&(RARE.includes(s.coat)||LEGEND.includes(s.coat)))?s.coat:'classic';
+const SPCOATS={kitsune:['shadow'],giraffe:['albino'],shoebill:['snowy','raven'],gorilla:['silverback'],octopus:['crimson','deepsea'],bee:['hornet'],jorts:['blackdenim'],vase:[]};
+const COATNAME={camo:'Camo',noir:'Noir',galaxy:'Galaxy',shadow:'Shadow',albino:'Albino',snowy:'Snowy',raven:'Raven',silverback:'Silverback',crimson:'Crimson',deepsea:'Deep Sea',hornet:'Hornet',blackdenim:'Black Denim'};
+const LEGEND=['galaxy'],RARE=['camo','noir',...new Set(Object.values(SPCOATS).flat())];
+const coatsFor=sp=>['camo','noir',...(SPCOATS[sp]||[])];
+const coatTier=c=>LEGEND.includes(c)?'LEGENDARY':RARE.includes(c)?'RARE':'';
+const rollCoat=sp=>{const r=Math.random();return r<1/60?'galaxy':r<1/60+1/20?pick(coatsFor(sp)):'classic'};
+const coatOf=s=>(s.coat==='galaxy'||coatsFor(s.sp).includes(s.coat))?s.coat:'classic';
+const coatLabel=c=>(COATNAME[c]||c).toUpperCase();
 const img=(s,o={})=>{const rk=o.rank||(o.fallen&&s.rank)||rankOf(s.xp||0),c=coatOf(s),src=o.fallen?`img/${s.sp}_fallen.webp`:c==='classic'?`img/${s.sp}_${rk}.webp`:`img/coats/${s.sp}_${rk}_${c}.webp`,sz=o.full?100:SIZE[rk-1]||100;
   const f=`style="width:${sz}%;height:${sz}%"`;
   return `<img class="spr${o.cls?' '+o.cls:''}" src="${src}" ${f} alt="${esc(o.alt||((s.name?s.name+', ':'')+SPECIES[s.sp]))}" draggable="false">`};
@@ -823,7 +827,7 @@ $('ti-next').onclick=()=>{save();blip();go('squad')};
 
 /* ---------- 3: squad: all three side by side ---------- */
 function cardHTML(x,pressed,extra=''){const r=rankOf(x.xp);ensure(x);
-  return `<button class="scard${isOut(x)?' out':''}" data-id="${x.id}" aria-pressed="${pressed}" ${extra}><span class="pic">${img(x)}</span><b>${esc(x.name)}</b><span class="lv">LV${r} ${RANKS[r-1].toUpperCase()}</span><small>${SPECIES[x.sp]} · ${TRAITS[x.trait].n}</small><small>${cap1(x.pers)}${x.nick?' · "'+esc(x.nick)+'"':''}</small>${coatTier(coatOf(x))?`<small class="rare">★ ${coatOf(x).toUpperCase()}</small>`:''}<span class="xp"><i style="width:${pct(x.xp)}%"></i></span>${isOut(x)?'<small>MED BAY</small>':''}</button>`}
+  return `<button class="scard${isOut(x)?' out':''}" data-id="${x.id}" aria-pressed="${pressed}" ${extra}><span class="pic">${img(x)}</span><b>${esc(x.name)}</b><span class="lv">LV${r} ${RANKS[r-1].toUpperCase()}</span><small>${SPECIES[x.sp]} · ${TRAITS[x.trait].n}</small><small>${cap1(x.pers)}${x.nick?' · "'+esc(x.nick)+'"':''}</small>${coatTier(coatOf(x))?`<small class="rare">★ ${coatLabel(coatOf(x))}</small>`:''}<span class="xp"><i style="width:${pct(x.xp)}%"></i></span>${isOut(x)?'<small>MED BAY</small>':''}</button>`}
 function drawSquad(){
   if(!S.draft.task.trim()){go('task');return}
   const s=pickSel(),out=isOut(s),n=S.roster.length;
@@ -907,8 +911,9 @@ const RECRUIT={stoic:["Signal locked. Reporting for duty, {c}.","Heard you get t
  sarcastic:["Oh. You. Fine, I'll join.","Try not to get me killed, {c}."]};
 const CALLOUT="...anyone out there? ...{c}? Can you hear me?",WINDOW=25000;
 let tune=0,locked=false,lockSince=0,talkI=0,noiseSrc=null,noiseGain=null,radioT=null,staticT=null,askMode=false,relArm=null;
-function newSignal(mode){const taken=S.roster.map(x=>x.sp),pool=Object.keys(SPECIES).filter(k=>!taken.includes(k)),c=pick(COATS);
-  return{mode:mode||'first',full:fullName(),sp:pick(pool.length?pool:Object.keys(SPECIES)),coat:rollCoat(),hue:0,trait:pick(Object.keys(TRAITS)),pers:pick(PERS),tic:pick(TICS),call:pick(CALLS),catch:makeCatch(),f:.15+Math.random()*.7}}
+function newSignal(mode){const o=newSignal0(mode);o.sp=o.sp||pick(Object.keys(SPECIES).filter(k=>!S.roster.map(x=>x.sp).includes(k)).concat(S.roster.length>=8?Object.keys(SPECIES):[]));o.coat=rollCoat(o.sp);return o}
+function newSignal0(mode){const taken=S.roster.map(x=>x.sp),pool=Object.keys(SPECIES).filter(k=>!taken.includes(k)),c=pick(COATS);
+  return{mode:mode||'first',full:fullName(),sp:null,coat:null,hue:0,trait:pick(Object.keys(TRAITS)),pers:pick(PERS),tic:pick(TICS),call:pick(CALLS),catch:makeCatch(),f:.15+Math.random()*.7}}
 const FIRST=['Dana','Marcus','Priya','Tomasz','Aiko','Kofi','Elena','Ravi','Siobhan','Mateo','Yusuf','Ingrid','Chidi','Mei','Bastien','Amara','Viktor','Lena','Hamza','Rosa','Desmond','Freya','Omar','Noor','Felix','Zara','Idris','Hana','Callum','Leila','Arjun','Greta','Kwame','Sana','Rafael','Maeve','Tariq','Juno','Emeka','Astrid'];
 const LAST=['Okafor','Novak','Reyes','Lindqvist','Tanaka','Mensah','Kowalski','Haddad','Byrne','Moreau','Petrov','Chaudhry','Silva','Nakamura','Adeyemi','Fitzgerald','Kim','Rossi','Abara','Lund','Duarte','Hale','Sato','Osei','Volkov','Brennan','Iqbal','Castillo','Wren','Achebe','Holm','Varga','Quinn','Ndiaye','Moss','Ferreira','Kaur','Strand','Bello','Marsh'];
 const fullName=()=>pick(FIRST)+' '+pick(LAST);
@@ -962,7 +967,7 @@ function showLost(){const sg=S.signal;$('c-dial').classList.remove('drag');$('c-
 function lockOn(){locked=true;clearInterval(radioT);stopNoise();$('c-dial').classList.remove('drag');
   const sg=S.signal;sg.locked=true;save();$('c-pic').innerHTML=img(sg,{rank:1});$('c-pic').className='pic alive';
   flash();burst($('c-fx'),40,170);bigChord();buzz([60,40,120]);shake();
-  const tier=coatTier(coatOf(sg));if(tier){setTimeout(()=>{party(tier==='LEGENDARY'?6:4);bigChord();note(`${tier} COAT: ${coatOf(sg).toUpperCase()}`)},500)}
+  const tier=coatTier(coatOf(sg));if(tier){setTimeout(()=>{party(tier==='LEGENDARY'?6:4);bigChord();note(`${tier} COAT: ${coatLabel(coatOf(sg))}`)},500)}
   $('c-h').textContent=tier?`Signal locked · ${tier}`:'Signal locked';$('c-bars').hidden=true;$('c-msg').hidden=true;$('c-talk').hidden=false;talkI=0;speak()}
 const introLines=()=>(recruiting()?RECRUIT:INTRO)[S.signal.pers]||(recruiting()?RECRUIT:INTRO).stoic;
 function speak(){const sg=S.signal,L=introLines(),full=recruiting()&&S.roster.length>=MAX;$('c-full').hidden=true;$('c-namebox').hidden=true;
@@ -1277,12 +1282,12 @@ function drawDev(){const s=devSoldier(),r=rankOf(s.xp);
   $('dv-who').textContent=`${s.name.toUpperCase()} · ${SPECIES[s.sp].toUpperCase()} · ${RANKS[r-1].toUpperCase()}`;
   $('dv-list').innerHTML=Object.keys(SPECIES).map(sp=>`<div class="devrow"><b>${SPECIES[sp]}</b>${[1,2,3,4,5].map(k=>`<button data-sp="${sp}" data-r="${k}" aria-pressed="${s.sp===sp&&r===k}" aria-label="${SPECIES[sp]} ${RANKS[k-1]}">${img({sp,coat:coatOf(s)},{rank:k,full:true,alt:''})}</button>`).join('')}<button data-sp="${sp}" data-r="0" aria-label="${SPECIES[sp]} fallen preview"><img class="spr" src="img/${sp}_fallen.webp" alt=""></button></div>`).join('');
   $('dv-evo').textContent=r<5?`EVOLVE TO ${RANKS[r].toUpperCase()}`:'EVOLVE (REPLAY)'}
-function drawCoats(){const s=devSoldier();$('dv-coats').innerHTML=['classic',...RARE,...LEGEND].map(c=>`<button class="chip" data-c="${c}" aria-pressed="${coatOf(s)===c}" style="min-width:0;font-size:11px;padding:4px 6px">${c}</button>`).join('')}
+function drawCoats(){const s=devSoldier();$('dv-coats').innerHTML=['classic',...coatsFor(s.sp),'galaxy'].map(c=>`<button class="chip" data-c="${c}" aria-pressed="${coatOf(s)===c}" style="min-width:0;font-size:11px;padding:4px 6px">${c==='classic'?'classic':COATNAME[c]}</button>`).join('')}
 $('dv-coats').onclick=e=>{const b=e.target.closest('[data-c]');if(!b)return;const s=devSoldier();s.coat=b.dataset.c;save();blip();drawCoats();drawDev();if(cur==='squad')drawSquad()};
 function openDev(){drawCoats();S.dev=true;save();$('devtag').hidden=false;drawDev();$('dev').classList.add('on');note('DEV MODE');tone(523,0,.1,.1);tone(784,.1,.1,.1);tone(1047,.2,.2,.1)}
 $('dv-list').onclick=e=>{const b=e.target.closest('button');if(!b)return;const s=devSoldier(),r=+b.dataset.r;
   if(!r){$('dev').classList.remove('on');$('g-pic').innerHTML='';const tmp={...s,sp:b.dataset.sp};go('letgo');$('g-look').textContent=`${s.name.toUpperCase()} LOOKS AT YOU`;$('g-pic').innerHTML=img(tmp,{fallen:true});$('g-name').textContent=s.name.toUpperCase();$('g-meta').textContent='PREVIEW';$('g-fell').textContent='';setHold(0);devPreview=true;return}
-  s.sp=b.dataset.sp;s.hue=0;s.coat='Classic';s.xp=XP_AT[r-1];save();blip();drawDev();if(cur==='squad')drawSquad()};
+  const keep=s.coat;s.sp=b.dataset.sp;s.hue=0;s.coat=(keep==='galaxy'||coatsFor(s.sp).includes(keep))?keep:'classic';s.xp=XP_AT[r-1];save();blip();drawDev();drawCoats();if(cur==='squad')drawSquad()};
 $('dv-evo').onclick=async()=>{const s=devSoldier(),r=rankOf(s.xp),from=r<5?r:4,to=from+1;$('dev').classList.remove('on');await evolve(s,from,to);s.xp=Math.max(s.xp,XP_AT[to-1]);save();if(cur==='squad')drawSquad();openDev()};
 $('dv-win').onclick=()=>{$('dev').classList.remove('on');party(4)};
 $('dv-enc').onclick=()=>{$('dev').classList.remove('on');devSoldier();startRecruit()};
@@ -1297,7 +1302,7 @@ if(S.dev)$('devtag').hidden=false;
 const RES={win:'WIN',late:'CLOSE CALL',excuse:'EXCUSE',tough:'PULLED THROUGH'};
 function drawFile(){const s=soldier(S.sel);if(!s){go('task');return}ensure(s);const r=rankOf(s.xp),L=s.log||[];
   $('f-pic').innerHTML=img(s);$('f-name').textContent=s.full||s.name;$('f-nick').textContent=s.nick?`"${s.nick}"`:'NICKNAME EARNED AT FIRST PROMOTION';
-  $('f-meta').textContent=`${RANKS[r-1]} ${SPECIES[s.sp]} · ${cap1(s.pers)} · ${TRAITS[s.trait].n}`+(coatTier(coatOf(s))?` · ${coatTier(coatOf(s))} ${coatOf(s).toUpperCase()} COAT`:'');
+  $('f-meta').textContent=`${RANKS[r-1]} ${SPECIES[s.sp]} · ${cap1(s.pers)} · ${TRAITS[s.trait].n}`+(coatTier(coatOf(s))?` · ${coatTier(coatOf(s))} ${coatLabel(coatOf(s))} COAT`:'');
   $('f-catch').textContent=tic(s,s.catch);
   $('f-won').textContent=s.missions;$('f-days').textContent=daysWith(s);$('f-close').textContent=L.filter(e=>e.r!=='win').length;
   $('f-log').innerHTML=L.length?L.slice().reverse().map(e=>`<div class="rec"><b>${fmtDate(e.d).toUpperCase()} · <span class="w">${RES[e.r]||'WIN'}</span> · ${e.m} MIN</b><span>${esc(e.t)}</span>${e.why?`<span>&quot;${esc(e.why)}&quot;</span>`:''}</div>`).join(''):'<p class="sub">No missions yet.</p>'}
