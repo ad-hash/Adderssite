@@ -735,22 +735,24 @@ function nickFor(s){const L=s.log||[];if(!L.length)return pick(['Ghost','Boots',
   if(late)return 'Photo Finish';if(avgM<=10)return 'Quickdraw';if(avgM>=45)return 'Marathon';if(avgSt>=3)return 'Checklist';if(early>=L.length*.6)return 'Early Bird';
   return {speedy:'Zoom',tough:'Iron',glutton:'Snacks',eager:'Keen'}[s.trait]||pick(['Ghost','Boots','Sparky','Ace','Tank'])}
 const dname=s=>s.nick?`${s.name} "${s.nick}"`:s.name;
-function ensure(s){if(!s.story)s.story=rollStory();if(!s.storySeen)s.storySeen=Math.min(rankOf(s.xp||0),1);if(s.hue){s.hue=0;s.coat='classic'}if(s.coat!=='galaxy'&&!coatsFor(s.sp).includes(s.coat))s.coat='classic';if(!s.pers)s.pers=pick(PERS);if(!s.tic)s.tic=pick(TICS);if(!s.call)s.call=pick(CALLS);if(!s.catch)s.catch=makeCatch();if(!s.log)s.log=[];if(s.nick===undefined)s.nick=null;if(!s.born)s.born=Date.now()}
+function ensure(s){if(OLDCOAT[s.coat])s.coat=OLDCOAT[s.coat];if(!s.story)s.story=rollStory();if(!s.storySeen)s.storySeen=Math.min(rankOf(s.xp||0),1);if(s.hue){s.hue=0;s.coat='classic'}if(s.coat!=='galaxy'&&!coatsFor(s.sp).includes(s.coat))s.coat='classic';if(!s.pers)s.pers=pick(PERS);if(!s.tic)s.tic=pick(TICS);if(!s.call)s.call=pick(CALLS);if(!s.catch)s.catch=makeCatch();if(!s.log)s.log=[];if(s.nick===undefined)s.nick=null;if(!s.born)s.born=Date.now()}
 
 
 const rankOf=xp=>{let r=1;XP_AT.forEach((v,i)=>{if(xp>=v)r=i+1});return r};
 const pct=xp=>{const r=rankOf(xp);return r>=5?100:Math.round((xp-XP_AT[r-1])/(XP_AT[r]-XP_AT[r-1])*100)};
 const SIZE=[70,79,87,94,100];
 /* coats: half of recruits get a common colourway; rare 1 in 20, legendary 1 in 60. Only the body is recoloured, pre-rendered in img/coats */
-const COMMON={gorilla:['ginger','jet','sandy'],kitsune:['redfox','sand','arctic'],giraffe:['midnight','chestnut','blonde'],shoebill:['slate','mocha','dusk'],octopus:['coral','amber','cobalt'],bee:['frost','lime','rose'],jorts:['acidwash','rawindigo','pinkdenim'],vase:['imperialred','celadon','saffron']};
+const COMMON={gorilla:['mountain','lowland','ginger'],kitsune:['red','silver','marble'],giraffe:['reticulated','masai','kordofan'],shoebill:['juvenile','storm','dusty'],octopus:['blueringed','mimic','common'],bee:['carpenter','orchid','leafcutter'],jorts:['acidwash','bleached','khaki'],vase:['celadon','imari','famillerose']};
+const OLDCOAT={jet:'mountain',sandy:'lowland',redfox:'red',sand:'marble',arctic:'silver',midnight:'masai',chestnut:'reticulated',blonde:'kordofan',slate:'storm',mocha:'juvenile',dusk:'dusty',coral:'common',amber:'mimic',cobalt:'blueringed',frost:'leafcutter',lime:'orchid',rose:'carpenter',rawindigo:'bleached',pinkdenim:'khaki',imperialred:'imari',saffron:'famillerose'};
 const SPCOATS={kitsune:['shadow'],giraffe:['albino'],shoebill:['snowy','raven'],gorilla:['silverback'],octopus:['crimson','deepsea'],bee:['hornet'],jorts:['blackdenim'],vase:[]};
-const COATNAME={ginger:'Ginger',jet:'Jet',sandy:'Sandy',redfox:'Red Fox',sand:'Sand',arctic:'Arctic',midnight:'Midnight',chestnut:'Chestnut',blonde:'Blonde',slate:'Slate',mocha:'Mocha',dusk:'Dusk',coral:'Coral',amber:'Amber',cobalt:'Cobalt',frost:'Frost',lime:'Lime',rose:'Rose',acidwash:'Acid Wash',rawindigo:'Raw Indigo',pinkdenim:'Pink Denim',imperialred:'Imperial Red',celadon:'Celadon',saffron:'Saffron',camo:'Camo',noir:'Noir',galaxy:'Galaxy',shadow:'Shadow',albino:'Albino',snowy:'Snowy',raven:'Raven',silverback:'Silverback',crimson:'Crimson',deepsea:'Deep Sea',hornet:'Hornet',blackdenim:'Black Denim'};
+const COATNAME={mountain:'Mountain',lowland:'Lowland',ginger:'Ginger',red:'Red',silver:'Silver',marble:'Marble',reticulated:'Reticulated',masai:'Masai',kordofan:'Kordofan',juvenile:'Juvenile',storm:'Storm',dusty:'Dusty',blueringed:'Blue-ringed',mimic:'Mimic',common:'Common',carpenter:'Carpenter',orchid:'Orchid',leafcutter:'Leafcutter',acidwash:'Acid Wash',bleached:'Bleached',khaki:'Khaki',celadon:'Celadon',imari:'Imari',famillerose:'Famille Rose',camo:'Camo',noir:'Noir',galaxy:'Galaxy',shadow:'Shadow',albino:'Albino',snowy:'Snowy',raven:'Raven',silverback:'Silverback',crimson:'Crimson',deepsea:'Deep Sea',hornet:'Hornet',blackdenim:'Black Denim'};
 const LEGEND=['galaxy'],RARE=['camo','noir',...new Set(Object.values(SPCOATS).flat())];
 const coatsFor=sp=>[...(COMMON[sp]||[]),'camo','noir',...(SPCOATS[sp]||[])],rareFor=sp=>['camo','noir',...(SPCOATS[sp]||[])];
 const coatTier=c=>LEGEND.includes(c)?'LEGENDARY':RARE.includes(c)?'RARE':'';
 const rollCoat=sp=>{const r=Math.random();return r<1/60?'galaxy':r<1/60+1/20?pick(rareFor(sp)):r<.55?pick(COMMON[sp]||['classic']):'classic'};
 const coatOf=s=>(s.coat==='galaxy'||coatsFor(s.sp).includes(s.coat))?s.coat:'classic';
 const coatLabel=c=>(COATNAME[c]||c).toUpperCase();
+const kindOf=s=>{const c=coatOf(s);return ((COMMON[s.sp]||[]).includes(c)?COATNAME[c]+' ':'')+SPECIES[s.sp]};
 const img=(s,o={})=>{const rk=o.rank||(o.fallen&&s.rank)||rankOf(s.xp||0),c=coatOf(s),src=o.fallen?`img/${s.sp}_fallen.webp`:c==='classic'?`img/${s.sp}_${rk}.webp`:`img/coats/${s.sp}_${rk}_${c}.webp`,sz=o.full?100:SIZE[rk-1]||100;
   const f=`style="width:${sz}%;height:${sz}%"`;
   return `<img class="spr${o.cls?' '+o.cls:''}" src="${src}" ${f} alt="${esc(o.alt||((s.name?s.name+', ':'')+SPECIES[s.sp]))}" draggable="false">`};
@@ -848,7 +850,7 @@ function drawSquad(){
   const sq=Math.random()<.18?squadLine(s):null;
   $('b-say').textContent=sq?sq:S.away?tic(s,`You were gone ${S.away} days, ${s.call}.`):(Math.random()<.5&&S.draft.task?fill(s,pick(TASKLINES[s.pers]||TASKLINES.stoic),S.draft.task):(memory(s,S.draft.task)||line(s,'greet')));S.away=0;startChat(s,'b-say');
   $('b-name').textContent=dname(s);
-  $('b-meta').textContent=(out?`MED BAY · back in ${hrs(s.medUntil-Date.now())}h · `:'')+`LV${r} ${RANKS[r-1]} · ${SPECIES[s.sp]} · ${TRAITS[s.trait].n} · ${cap1(s.pers)}`+(coatTier(c)?` · ★ ${coatLabel(c)}`:'');
+  $('b-meta').textContent=(out?`MED BAY · back in ${hrs(s.medUntil-Date.now())}h · `:'')+`LV${r} ${RANKS[r-1]} · ${kindOf(s)} · ${TRAITS[s.trait].n} · ${cap1(s.pers)}`+(coatTier(c)?` · ★ ${coatLabel(c)}`:'');
   $('b-xp').style.width=pct(s.xp)+'%';
   $('b-prev').style.visibility=$('b-next').style.visibility=n>1?'visible':'hidden';
   $('b-dots').innerHTML=n>1?S.roster.map(x=>`<i class="${x.id===s.id?'on':''}"></i>`).join(''):'';
@@ -1377,7 +1379,7 @@ if(S.dev)$('devtag').hidden=false;
 const RES={win:'WIN',late:'CLOSE CALL',excuse:'EXCUSE',tough:'PULLED THROUGH'};
 function drawFile(){const s=soldier(S.sel);if(!s){go('task');return}ensure(s);const r=rankOf(s.xp),L=s.log||[];
   $('f-pic').innerHTML=img(s);$('f-name').textContent=s.name;$('f-nick').textContent=s.nick?`"${s.nick}"`:'NICKNAME EARNED AT FIRST PROMOTION';
-  $('f-meta').textContent=`${RANKS[r-1]} ${SPECIES[s.sp]} · ${cap1(s.pers)} · ${TRAITS[s.trait].n}`+(coatTier(coatOf(s))?` · ${coatTier(coatOf(s))} ${coatLabel(coatOf(s))} COAT`:'');
+  $('f-meta').textContent=`${RANKS[r-1]} ${kindOf(s)} · ${cap1(s.pers)} · ${TRAITS[s.trait].n}`+(coatTier(coatOf(s))?` · ${coatTier(coatOf(s))} ${coatLabel(coatOf(s))} COAT`:'');
   $('f-catch').textContent=tic(s,s.catch);
   $('f-won').textContent=s.missions;$('f-days').textContent=daysWith(s);$('f-close').textContent=L.filter(e=>e.r!=='win').length;
   $('f-log').innerHTML=L.length?L.slice().reverse().map(e=>`<div class="rec"><b>${fmtDate(e.d).toUpperCase()} · <span class="w">${RES[e.r]||'WIN'}</span> · ${e.m} MIN</b><span>${esc(e.t)}</span>${e.why?`<span>&quot;${esc(e.why)}&quot;</span>`:''}</div>`).join(''):'<p class="sub">No missions yet.</p>'}
