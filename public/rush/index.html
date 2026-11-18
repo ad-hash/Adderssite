@@ -956,7 +956,7 @@ function radioUpdate(){const st=strength(),sg=S.signal;arc($('c-arc'),$('c-knob'
   const left=recruiting()&&sg.until&&!locked?Math.max(0,Math.ceil((sg.until-Date.now())/1000)):null;
   $('c-freq').textContent='FM '+(87.5+tune*20.5).toFixed(1)+(left!==null?` · ${left}s`:'');
   [...$('c-bars').children].forEach((b,i)=>b.classList.toggle('on',st>i/5+.05));
-  const im=$('c-pic').querySelector('img');if(im&&!locked){im.style.opacity=(.3+st*.65).toFixed(2);im.style.filter=`grayscale(1) contrast(.85) brightness(${(.55+st*.35).toFixed(2)}) blur(${((1-st)*4).toFixed(1)}px)`}
+  const im=$('c-pic').querySelector('img');if(im&&!locked){im.style.opacity=(.3+st*.65).toFixed(2);im.style.filter=`brightness(0) invert(.55) blur(${((1-st)*3).toFixed(1)}px)`}
   if(noiseGain)noiseGain.gain.value=soundOn&&!locked?.04+(1-st)*.12:0;
   if(locked||askMode)return;
   if(left===0){loseSignal();return}
