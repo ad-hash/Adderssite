@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Rush · Adders OS</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Crect%20width%3D%2224%22%20height%3D%2224%22%20rx%3D%223%22%20fill%3D%22%23111%22/%3E%3Cpath%20d%3D%22M13.5%202.5L5%2013.5h6l-1.5%208%208.5-11h-6z%22%20fill%3D%22%23d9764d%22%20stroke%3D%22%23f5f3ed%22%20stroke-width%3D%221%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="img/icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -39,6 +41,7 @@ input,textarea{font:inherit;color:var(--ink)}
 .logo{background:#f5f3ed;color:#111;font-family:var(--pixel);font-weight:700;font-size:13px;letter-spacing:.06em;padding:3px 6px}
 .tbt{font-family:var(--pixel);font-size:13px;letter-spacing:.16em;text-transform:uppercase;white-space:nowrap}
 .sp{flex:1}
+.tbt .bolt{width:15px;height:15px;fill:var(--acc-hi);margin-right:7px;vertical-align:-2px}
 .ib{width:36px;height:36px;display:grid;place-items:center;color:var(--acc-hi)}
 .ib svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .ib.mode svg{width:18px;height:18px;fill:#e9e3d6;stroke:none}
@@ -345,7 +348,7 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
 <body>
 <div class="app">
 <header class="topbar">
-  <a class="home" href="https://adders.party/" aria-label="Back to adders.party" title="adders.party"><span class="logo">AG</span></a><span class="tbt">Rush</span>
+  <a class="home" href="https://adders.party/" aria-label="Back to adders.party" title="adders.party"><span class="logo">AG</span></a><span class="tbt"><svg class="bolt" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2.5L5 13.5h6l-1.5 8 8.5-11h-6z"/></svg>Rush</span>
   <span class="sp"></span>
   <button class="ib" id="memb" aria-label="Memorial wall"><svg viewBox="0 0 24 24"><path d="M6 21V10a6 6 0 0 1 12 0v11z"/><path d="M3.5 21h17M12 10.5v6M9.5 13h5"/></svg></button>
   <button class="ib" id="el" aria-label="Change colour"><svg viewBox="0 0 24 24" id="elg"></svg></button>
@@ -763,7 +766,7 @@ $('b-go').onclick=()=>{
 };
 async function countdown(){const c=$('count');c.classList.add('on');
   for(const n of ['3','2','1']){c.innerHTML=`<b>${n}</b>`;tone(440,0,.15,.14);buzz(30);await wait(650)}
-  c.innerHTML='<b class="go">RUSH!</b>';tone(880,0,.4,.16);noise(0,.3,.25);buzz(120);await wait(650);c.classList.remove('on')}
+  c.innerHTML='<b class="go"><svg viewBox="0 0 24 24" style="width:.7em;height:.7em;fill:currentColor;vertical-align:-.05em" aria-hidden="true"><path d="M13.5 2.5L5 13.5h6l-1.5 8 8.5-11h-6z"/></svg>RUSH!</b>';tone(880,0,.4,.16);noise(0,.3,.25);buzz(120);await wait(650);c.classList.remove('on')}
 
 /* steps, added inline on the orders page */
 function drawSteps0(){$('t-steps').innerHTML=S.draft.steps.map((t,i)=>`<button class="step" data-i="${i}" aria-label="Remove ${esc(t)}">${esc(t)} &times;</button>`).join('')}
