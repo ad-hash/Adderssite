@@ -380,6 +380,23 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
 .lg-pic .pic{height:100%;aspect-ratio:1;max-height:300px;transition:opacity .2s}
 .lg-name{font-family:var(--pixel);font-size:26px}
 .hold{position:relative;width:100%;height:64px;border:3px solid var(--ink);background:var(--tile);font-family:var(--pixel);font-size:16px;letter-spacing:.1em;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;flex-shrink:0}
+.land{flex:1;display:flex;flex-direction:column;justify-content:center;gap:26px;padding:0 6px}
+.land-logo{display:flex;align-items:center;gap:10px;font-family:var(--pixel);color:var(--acc)}
+.land-logo svg{width:56px;height:56px;fill:currentColor;filter:drop-shadow(3px 3px 0 var(--ink))}
+.land-logo b{font-size:clamp(48px,16vw,68px);letter-spacing:.06em;color:var(--ink);line-height:1}
+.land-tag{margin:0;font-family:var(--pixel);font-size:clamp(20px,6vw,26px);line-height:1.3}
+.land-how{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.land-how li{display:grid;grid-template-columns:34px 1fr;align-items:center;gap:12px;font-size:15px;line-height:1.4}
+.land-how b{width:34px;height:34px;display:grid;place-items:center;background:var(--acc);color:#fff;border:2px solid var(--ink);font-family:var(--pixel);font-size:16px}
+.pickrow{display:grid;grid-template-columns:40px 1fr 40px;gap:6px;align-items:stretch;flex-shrink:0}
+.pickrow .arr{font-family:var(--pixel);font-size:20px;border:2px solid var(--ink);background:var(--tile)}
+.pickrow .arr:disabled{opacity:.3}
+.qwho{display:grid;grid-template-columns:64px 1fr;align-items:center;gap:8px;border:2px solid var(--ink);background:var(--tile);padding:4px 8px;text-align:left;min-width:0}
+.qwho .pic{width:64px;height:64px}
+.qmid{display:flex;flex-direction:column;gap:3px;min-width:0}
+.qmid b{font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qmid small{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qmid .xp{display:block}
 .intro{margin:0;text-align:center;font-size:14px;line-height:1.5;color:var(--ink);flex-shrink:0}
 .duo{display:grid;grid-template-columns:1fr 1.3fr;gap:8px;flex-shrink:0}
 .duo .btn{font-size:15px}
@@ -426,7 +443,7 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
 
   <!-- 1: THE ONE THING -->
   <section class="screen" id="s-task">
-    <div class="crumbs"><b>1 ORDERS</b><span>&gt; 2 CLOCK</span><span>&gt; 3 SQUAD</span><span>&gt; 4 RUSH</span></div>
+    <div class="crumbs"><b>1 ORDERS</b><span>&gt; 2 CLOCK &amp; SQUAD</span><span>&gt; 3 RUSH</span></div>
     <section class="win grow"><div class="bar"><span class="close"></span><span class="wname">Orders</span></div>
       <div class="pane" style="justify-content:center;gap:14px">
         <h1 class="big-q"><label for="m-task">What&#39;s the objective?</label></h1>
@@ -440,7 +457,7 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
 
   <!-- 2: TIME -->
   <section class="screen" id="s-time">
-    <div class="crumbs"><span>1 ORDERS &gt;</span><b>2 CLOCK</b><span>&gt; 3 SQUAD</span><span>&gt; 4 RUSH</span></div>
+    <div class="crumbs"><span>1 ORDERS &gt;</span><b>2 CLOCK &amp; SQUAD</b><span>&gt; 3 RUSH</span></div>
     <section class="win grow"><div class="bar"><span class="close"></span><span class="wname">Mission clock</span></div>
       <div class="pane">
         <div class="dialwrap">
@@ -450,9 +467,12 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
           </div>
         </div>
         <div class="quick" id="b-quick"></div>
-        <p class="lab" style="text-align:center;color:var(--muted)" id="b-grace"></p>
+        <p class="lab" style="text-align:center;color:var(--muted);margin:0" id="b-grace"></p>
       </div></section>
-    <div class="navrow"><button class="btn" data-go="task">BACK</button><button class="btn go" id="ti-next">NEXT: PICK SQUAD</button></div>
+    <div class="pickrow"><button class="arr" id="q-prev" aria-label="Previous soldier">&lt;</button>
+      <button class="qwho" id="q-file" aria-label="Open service record"><span class="pic" id="q-pic"></span><span class="qmid"><b id="q-name"></b><small id="q-meta"></small><span class="xp"><i id="q-xp"></i></span></span></button>
+      <button class="arr" id="q-next" aria-label="Next soldier">&gt;</button></div>
+    <div class="navrow"><button class="btn" data-go="task">BACK</button><button class="btn go" id="ti-next">RUSH!</button></div>
   </section>
 
   <!-- 3: SQUAD -->
@@ -473,6 +493,20 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
     <div class="bigtime" id="g2-time" hidden>00:00</div>
     <div class="stats"><div class="stat"><b id="g2-won">0</b><small>wins</small></div><div class="stat"><b id="g2-streak">0</b><small>streak</small></div><div class="stat"><b id="g2-fallen">0</b><small>fallen</small></div></div>
     <button class="btn go" id="g2-go">ENTER THE FRAY</button>
+  </section>
+
+  <!-- LANDING: what Rush is, before the radio -->
+  <section class="screen" id="s-land">
+    <div class="land">
+      <div class="land-logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2.5L5 13.5h6l-1.5 8 8.5-11h-6z"/></svg><b>RUSH</b></div>
+      <p class="land-tag">One task. One clock.<br>One squad counting on you.</p>
+      <ol class="land-how">
+        <li><b>1</b><span>Write the task. Set the clock.</span></li>
+        <li><b>2</b><span>Beat it and your soldier levels up and evolves.</span></li>
+        <li><b>3</b><span>Miss it and they bleed out. Be honest.</span></li>
+      </ol>
+    </div>
+    <button class="btn go" id="land-go">FIND YOUR FIRST SOLDIER</button>
   </section>
 
   <!-- FIRST CONTACT: tune the radio to find your first soldier -->
@@ -560,7 +594,7 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
 
   <!-- SERVICE RECORD -->
   <section class="screen" id="s-file">
-    <div class="head"><h1>Service record</h1><button class="lab" data-go="squad" style="color:var(--muted);padding:6px 0">&lt; BACK</button></div>
+    <div class="head"><h1>Service record</h1><button class="lab" id="f-back" style="color:var(--muted);padding:6px 0">&lt; BACK</button></div>
     <div class="fhead"><div class="pic alive" id="f-pic"></div><div class="finfo"><b id="f-name"></b><span class="nk" id="f-nick"></span><small id="f-meta"></small><q id="f-catch"></q></div></div>
     <div class="stats"><div class="stat"><b id="f-won">0</b><small>missions</small></div><div class="stat"><b id="f-days">0</b><small>days served</small></div><div class="stat"><b id="f-close">0</b><small>close calls</small></div></div>
     <section class="win grow"><div class="bar"><span class="close"></span><span class="wname">Missions</span></div><div class="pane flog" id="f-log"></div></section>
@@ -811,7 +845,8 @@ function go(name){
   if(name!=='camp'){stopNoise();clearInterval(radioT)}
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b)go(b.dataset.go)});
-$('homeb').onclick=()=>{blip();if(S.mission){go('live');return}if(['honest','letgo'].includes(cur))return;go(S.roster.length?'base':'camp')};
+$('land-go').onclick=()=>{S.landed=true;save();audio();blip();go('camp')};
+$('homeb').onclick=()=>{blip();if(S.mission){go('live');return}if(['honest','letgo'].includes(cur))return;go(S.roster.length?'base':S.landed?'camp':'land')};
 $('memb').onclick=()=>{if(S.mission&&cur==='live'){note('FINISH THE MISSION FIRST');return}if(['honest','letgo'].includes(cur))return;go(cur==='memorial'?'task':'memorial')};
 
 /* ---------- 1: the one thing ---------- */
@@ -844,8 +879,14 @@ $('b-dial').addEventListener('pointerdown',e=>{audio();dragging=true;try{$('b-di
 $('b-dial').addEventListener('pointermove',e=>{if(dragging)setMins(minsAt(e))});
 ['pointerup','pointercancel'].forEach(ev=>$('b-dial').addEventListener(ev,()=>{if(dragging){dragging=false;save()}}));
 function pickSel(){const c=soldier(S.sel);if(!c||(isOut(c)&&S.roster.some(s=>!isOut(s)&&!isReserve(s))))S.sel=(S.roster.find(s=>!isOut(s)&&!isReserve(s))||S.roster[0]).id;return soldier(S.sel)}
-function drawTime(){if(!S.draft.task.trim()){go('task');return}setMins(S.mins);const s=pickSel();$('b-grace').textContent=`+${grace(s)} MIN GRACE`}
-$('ti-next').onclick=()=>{save();blip();if(ready().length===1&&pickSel0()){rushNow();return}go('squad')};
+function drawTime(){if(!S.draft.task.trim()){go('task');return}setMins(S.mins);pickSel();drawPick()}
+function drawPick(){const s=soldier(S.sel)||pickSel();if(!s)return;ensure(s);const r=rankOf(s.xp),c=coatOf(s),out=isOut(s),many=S.roster.length>1;
+  $('b-grace').textContent=`then +${grace(s)} MIN GRACE`;$('q-pic').innerHTML=img(s,{full:true});$('q-pic').style.opacity=out?.4:1;
+  $('q-name').textContent=dname(s);$('q-meta').textContent=out?`MED BAY · back in ${hrs(s.medUntil-Date.now())}h`:`LV${r} ${RANKS[r-1]} · ${kindOf(s)}`+(coatTier(c)?' ★':'');
+  $('q-xp').style.width=pct(s.xp)+'%';$('q-prev').disabled=$('q-next').disabled=!many;$('ti-next').disabled=out}
+function cycleQ(d){const i=S.roster.findIndex(x=>x.id===S.sel);S.sel=S.roster[(i+d+S.roster.length)%S.roster.length].id;save();blip();drawPick();act($('q-pic'),'a-hop')}
+$('q-prev').onclick=()=>cycleQ(-1);$('q-next').onclick=()=>cycleQ(1);$('q-file').onclick=()=>{blip();S.fileBack='time';go('file')};
+$('ti-next').onclick=()=>{save();rushNow()};
 
 /* ---------- 3: squad: all three side by side ---------- */
 function cardHTML(x,pressed,extra=''){const r=rankOf(x.xp);ensure(x);
@@ -865,7 +906,8 @@ function drawSquad(){
 }
 function cycle(d){const i=S.roster.findIndex(x=>x.id===S.sel);S.sel=S.roster[(i+d+S.roster.length)%S.roster.length].id;save();blip();drawSquad();act($('b-pic'),'a-hop')}
 $('b-prev').onclick=()=>cycle(-1);$('b-next').onclick=()=>cycle(1);
-$('b-file').onclick=()=>{blip();go('file')};
+$('b-file').onclick=()=>{blip();S.fileBack='squad';go('file')};
+$('f-back').onclick=()=>{blip();go(S.fileBack||'time')};
 {let sx=null;$('b-pic').addEventListener('pointerdown',e=>{sx=e.clientX});$('b-pic').addEventListener('pointerup',e=>{if(sx!==null&&Math.abs(e.clientX-sx)>40&&S.roster.length>1)cycle(e.clientX<sx?1:-1);sx=null})}
 const ready=()=>S.roster.filter(x=>!isOut(x));
 function pickSel0(){const r=ready();if(!r.length)return null;if(!soldier(S.sel)||isOut(soldier(S.sel)))S.sel=r[0].id;return soldier(S.sel)}
@@ -877,7 +919,7 @@ function rushNow(){
   S.draft={task:'',steps:[]};save();audio();startTrack(S.mission);countdown().then(()=>go('live'));
 }
 $('b-go').onclick=rushNow;
-$('t-rush').onclick=()=>{S.draft.task=$('m-task').value.trim();save();if(!S.draft.task){note('NO ORDERS, NO MISSION');$('m-task').focus();return}$('m-task').blur();if(!pickSel0()){go('squad');return}rushNow()};
+$('t-rush').onclick=()=>{S.draft.task=$('m-task').value.trim();save();if(!S.draft.task){note('NO ORDERS, NO MISSION');$('m-task').focus();return}$('m-task').blur();if(!pickSel0()){note('WHOLE SQUAD IN MED BAY');return}rushNow()};
 async function countdown(){const c=$('count');c.classList.add('on');
   for(const n of ['3','2','1']){c.innerHTML=`<b>${n}</b>`;tone(440,0,.15,.14);buzz(30);await wait(650)}
   c.innerHTML='<b class="go"><svg viewBox="0 0 24 24" style="width:.7em;height:.7em;fill:currentColor;vertical-align:-.05em" aria-hidden="true"><path d="M13.5 2.5L5 13.5h6l-1.5 8 8.5-11h-6z"/></svg>RUSH!</b>';tone(880,0,.4,.16);noise(0,.3,.25);buzz(120);await wait(650);c.classList.remove('on')}
@@ -989,7 +1031,7 @@ function drawCamp(){
   /* a first-contact signal saved before the three-signal update: replace it */
   if(S.signal.mode==='first'&&!S.signal.options&&!S.signal.locked){S.signal=newSignal('first');save()}
   const sg=S.signal;locked=false;lockSince=0;talkI=0;askMode=false;
-  $('c-talk').hidden=true;$('c-namebox').hidden=true;$('c-full').hidden=true;$('c-bars').hidden=false;$('c-msg').hidden=false;$('c-intro').hidden=!!S.roster.length;$('c-dial').classList.add('drag');
+  $('c-talk').hidden=true;$('c-namebox').hidden=true;$('c-full').hidden=true;$('c-bars').hidden=false;$('c-msg').hidden=false;$('c-intro').hidden=true;$('c-dial').classList.add('drag');
   $('c-h').textContent=recruiting()?'Faint signal':'Incoming signal';shownOpt=null;$('c-pic').className='pic';$('c-pic').innerHTML=img(near(),{rank:1,alt:'A figure in the static'});
   tune=0;radioUpdate();staticLoop();clearInterval(radioT);
   if(recruiting()&&sg.lost){showLost();return}
@@ -1414,7 +1456,7 @@ function drawFile(){const s=soldier(S.sel);if(!s){go('task');return}ensure(s);co
   if(S.mission&&!soldier(S.mission.sid))S.mission=null;
   if(S.encounter){S.signal=S.signal||newSignal('recruit');delete S.encounter}if(S.drop)S.drop=null;
   if(S.mission){if(S.mission.over||Date.now()>=S.mission.graceEnd)endMission(true);else go('live')}
-  else{if(S.won||S.fallen.length||S.roster.length)S.camped=true;go(S.signal&&S.roster.length?'camp':S.roster.length?'base':'camp')}
+  else{if(S.won||S.fallen.length||S.roster.length)S.camped=true;go(S.signal&&S.roster.length?'camp':S.roster.length?'base':S.landed?'camp':'land')}
 })();
 </script>
 </body>
