@@ -614,24 +614,34 @@ const LINES={"stoic": {"start": ["Objective acquired.", "Moving out.", "Eyes for
 const RADIO={start:["Oscar Mike.","Wilco, {c}.","Lima Charlie. Moving.","Sitrep: boots on the ground.","Comms check. Lima Charlie.","Eyes on {task}."],mid:["Charlie Mike.","Sitrep: halfway.","{m} mikes on the clock.","Still Oscar Mike.","Holding course, {c}."],late:["{m} mikes. Danger close.","Clock is critical.","Final approach, {c}.","Bingo time. Wrap it up."],bleed:["Mayday, mayday.","Requesting medic, {c}.","Man down. Finish it."],win:["Bravo Zulu, {c}.","Splash one.","Tango Yankee, {c}.","Mission complete. RTB.","Target down. Good kill."]};
 function tic(s,t){if(s.tic==='caps')return t.toUpperCase();if(s.tic==='stutter')return t.replace(/^([A-Za-z])/,(m)=>m+'-'+m);if(s.tic==='dots')return t.replace(/[.!?]*$/,'...');return t}
 const daysWith=s=>Math.floor((Date.now()-(s.born||Date.now()))/86400000)+1;
-function line(s,kind,task,m){const own=LINES[s.pers]?.[kind]||LINES.stoic[kind],pool=RADIO[kind]&&Math.random()<.25?RADIO[kind]:own;let t=pick(pool);
-  return tic(s,t.replace(/\{c\}/g,s.call||'Commander').replace(/\{task\}/g,task||'that mission').replace(/\{m\}/g,m==null?'A few':String(m)))}
+/* the task is always quoted exactly as you wrote it: tics never touch it */
+function fill(s,t,task,m){t=t.replace(/\{c\}/g,s.call||'Commander').replace(/\{m\}/g,m==null?'A few':String(m));
+  const parts=t.split('{task}').map(x=>s.tic==='caps'?x.toUpperCase():x);
+  if(s.tic==='stutter')parts[0]=parts[0].replace(/^([A-Za-z])/,(c)=>c+'-'+c);
+  if(s.tic==='dots')parts[parts.length-1]=parts[parts.length-1].replace(/[.!?]*$/,'...');
+  return parts.join(task?`"${task}"`:'that mission')}
+function line(s,kind,task,m){const own=LINES[s.pers]?.[kind]||LINES.stoic[kind],pool=RADIO[kind]&&Math.random()<.25?RADIO[kind]:own;return fill(s,pick(pool),task,m)}
+/* lines that are all about the task itself */
+const TASKLINES={stoic:["{task}. Nothing else.","Target: {task}.","{task} falls today.","Only {task}. Then rest.","Locked on {task}.","{task}. Eyes on it."],
+  hype:["{task} doesn't stand a CHANCE!","We're gonna CRUSH {task}!","{task}? Light work!","Say it with me: {task}!","{task} is GOING DOWN!","Nobody does {task} like us!"],
+  nervous:["{task}... ok. We can do {task}.","Is {task} dangerous?","Just {task}. Only {task}. Breathe.","I trust you with {task}.","{task} looks scary. Going anyway.","One bite of {task} at a time."],
+  sarcastic:["{task}. Living the dream.","Wow. {task}. Thrilling.","Ah, {task}. My favourite.","{task} won't do itself. Sadly.","Who wrote {task}? Oh. You.","Imagine finishing {task}. Wild."]};
 /* history callbacks: lines only this soldier can say */
 function memory(s,task){const L=s.log||[],c=s.call||'Commander',out=[];
   const words=(task||'').toLowerCase().match(/[a-z]{4,}/g)||[];
   const past=L.slice().reverse().find(e=>e.t&&words.some(w=>e.t.toLowerCase().includes(w)));
-  if(past){const w=words.find(x=>past.t.toLowerCase().includes(x));out.push(`${cap1(w)} again? We've done this, ${c}.`)}
-  const wins=L.filter(e=>e.r==='win'||e.r==='late').length;if(wins>=2)out.push(`Mission ${wins+1} together, ${c}.`);
-  const last=L[L.length-1];if(last&&last.r==='late')out.push('Last time I bled. Not again.');
-  if(last&&last.r==='excuse')out.push('Last time you had an excuse. Not today.');
-  const d=daysWith(s);if(d>=2)out.push(`Day ${d}, ${c}.`,`${d} days in this squad. Still standing.`);
-  if(L.length>=3){const r=pick(L.slice(0,-1));out.push(`Remember ${r.t}? We handled that.`)}
-  if(L.length>=2)out.push(`First mission was ${L[0].t}. Look at us now.`);
-  if(S.streak>=2)out.push(`${S.streak} wins straight, ${c}. Don't break it.`);
-  if(wins>=5)out.push(`${wins} clocks beaten together.`);
-  if(s.scars)out.push(`${s.scars} scar${s.scars>1?'s':''}. Not adding another.`);
-  if(s.nick)out.push(`They call me ${s.nick} for a reason.`);
-  return out.length?tic(s,pick(out)):null}
+  if(past)out.push(['{task} again? We\'ve done this, {c}.',past.t],['Last time it was {task}. We won.',past.t]);
+  const wins=L.filter(e=>e.r==='win'||e.r==='late').length;if(wins>=2)out.push([`Mission ${wins+1} together, {c}.`]);
+  const last=L[L.length-1];if(last&&last.r==='late')out.push(['{task} nearly killed me. Not again.',last.t]);
+  if(last&&last.r==='excuse')out.push(['You had an excuse on {task}. Not today.',last.t]);
+  const d=daysWith(s);if(d>=2)out.push([`Day ${d}, {c}.`],[`${d} days in this squad. Still standing.`]);
+  if(L.length>=3){const r=pick(L.slice(0,-1));out.push(['Remember {task}? We handled that.',r.t])}
+  if(L.length>=2)out.push(['First mission was {task}. Look at us now.',L[0].t]);
+  if(S.streak>=2)out.push([`${S.streak} wins straight, {c}. Don't break it.`]);
+  if(wins>=5)out.push([`${wins} clocks beaten together.`]);
+  if(s.scars)out.push([`${s.scars} scar${s.scars>1?'s':''}. Not adding another.`]);
+  if(s.nick)out.push([`They call me ${s.nick} for a reason.`]);
+  if(!out.length)return null;const [t,tk]=pick(out);return fill(s,t,tk)}
 function nickFor(s){const L=s.log||[];if(!L.length)return pick(['Ghost','Boots','Sparky','Ace']);
   const late=L.filter(e=>e.r==='late').length,avgM=L.reduce((a,e)=>a+(e.m||25),0)/L.length,avgSt=L.reduce((a,e)=>a+(e.st||0),0)/L.length,early=L.filter(e=>e.r==='win'&&e.left>0.3).length;
   if(late)return 'Photo Finish';if(avgM<=10)return 'Quickdraw';if(avgM>=45)return 'Marathon';if(avgSt>=3)return 'Checklist';if(early>=L.length*.6)return 'Early Bird';
@@ -733,7 +743,7 @@ function drawSquad(){
   $('q-task').textContent=S.draft.task;$('q-min').textContent=`${S.mins} min`;
   $('b-pic').innerHTML=img(s);$('b-pic').style.opacity=out?.45:1;
   $('b-name').textContent=dname(s);
-  $('b-say').textContent=S.away?tic(s,`You were gone ${S.away} days, ${s.call}.`):(memory(s,S.draft.task)||line(s,'greet'));S.away=0;
+  $('b-say').textContent=S.away?tic(s,`You were gone ${S.away} days, ${s.call}.`):(Math.random()<.5&&S.draft.task?fill(s,pick(TASKLINES[s.pers]||TASKLINES.stoic),S.draft.task):(memory(s,S.draft.task)||line(s,'greet')));S.away=0;
   $('b-meta').textContent=(res?'RESERVE · ':'')+(out?`MED BAY · back in ${hrs(s.medUntil-Date.now())}h`:`${RANKS[r-1]} · ${TRAITS[s.trait].n}`);
   $('b-xp').style.width=pct(s.xp)+'%';
   $('b-prev').style.visibility=$('b-next').style.visibility=many?'visible':'hidden';
@@ -840,7 +850,7 @@ function drawLive(){
 }
 function drawSteps(){const m=S.mission;$('l-steps').innerHTML=m.micro.map((x,i)=>`<button class="step" data-i="${i}" aria-pressed="${x.done}">${esc(x.t)} +10</button>`).join('')}
 $('l-steps').onclick=e=>{const b=e.target.closest('.step');if(!b)return;const x=S.mission.micro[+b.dataset.i];x.done=!x.done;save();if(x.done){tone(988,0,.08,.08);tone(1319,.07,.1,.08);burst($('l-dial'),10,90)}drawSteps()};
-function say(kind){const s=soldier(S.mission.sid),m=Math.max(1,Math.ceil((S.mission.end-Date.now())/60000));let t=null;if((kind==='start'||kind==='mid')&&Math.random()<.45)t=memory(s,S.mission.task);$('l-say').textContent=t||line(s,kind,S.mission.task,m);sayAt=Date.now()}
+function say(kind){const s=soldier(S.mission.sid),m=Math.max(1,Math.ceil((S.mission.end-Date.now())/60000));let t=null;const r=Math.random();if((kind==='start'||kind==='mid')&&r<.3)t=memory(s,S.mission.task);else if(kind!=='bleed'&&r<.65)t=fill(s,pick(TASKLINES[s.pers]||TASKLINES.stoic),S.mission.task,m);$('l-say').textContent=t||line(s,kind,S.mission.task,m);sayAt=Date.now()}
 function tick(){
   clearTimeout(tickT);if(cur!=='live'||!S.mission)return;
   const m=S.mission,now=Date.now(),s=soldier(m.sid);
