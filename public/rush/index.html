@@ -398,6 +398,8 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
 .qmid small{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .qmid .xp{display:block}
 .intro{margin:0;text-align:center;font-size:14px;line-height:1.5;color:var(--ink);flex-shrink:0}
+#l-end{display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px}
+#l-end .skull{width:20px;height:20px;fill:currentColor;flex-shrink:0}
 .duo{display:grid;grid-template-columns:1fr 1.3fr;gap:8px;flex-shrink:0}
 .duo .btn{font-size:15px}
 .holdgo{position:relative;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
@@ -561,7 +563,7 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
         <div class="steps" id="l-steps"></div>
         <span id="l-who" hidden></span><span id="l-cap" hidden></span>
       </div></section>
-    <div class="btns"><button class="btn go holdgo" id="l-done"><i></i><span>HOLD: DONE</span></button><button class="btn" id="l-end">END EARLY</button></div>
+    <div class="btns" style="grid-template-columns:1fr 2fr"><button class="btn" id="l-end"><svg class="skull" viewBox="0 0 16 16" aria-hidden="true" shape-rendering="crispEdges"><path d="M5 1h6v1h2v2h1v5h-1v2h-2v2H5v-2H3V9H2V4h1V2h2zM5 6v2h2V6zM9 6v2h2V6zM7 9v1h2V9zM1 12h2v1h2v1H3v1H1v-1h1v-1H1zM13 12h2v1h-1v1h1v1h-2v-1h-2v-1h2z"/></svg><span>END EARLY</span></button><button class="btn go holdgo" id="l-done"><i></i><span>HOLD: DONE</span></button></div>
   </section>
 
   <!-- RETURN -->
@@ -1207,7 +1209,7 @@ function tick(){
     $('l-time').textContent=`${pad(Math.floor(left/60))}:${pad(Math.floor(left%60))}`;
     delete root.dataset.urgent;$('l-wname').innerHTML='<span class="dot"></span>Man down · bleeding out';
     $('l-cap').textContent='GRACE';
-    $('l-done').textContent='GOT IT DONE';$('l-end').textContent='END';
+    $('l-done').innerHTML='<i></i><span>HOLD: GOT IT DONE</span>';$('l-end').querySelector('span').textContent='END';
     if(phaseSaid!=='bleed'){phaseSaid='bleed';say('bleed')}
     if(now-lastThump>1100&&document.visibilityState==='visible'&&!trackOn()){lastThump=now;thump()}
   }else{
@@ -1219,7 +1221,7 @@ function tick(){
     const urgent=left<=Math.min(300,total*.2);if(urgent)root.dataset.urgent='1';else delete root.dataset.urgent;
     const sec=Math.ceil(left);if(left<=60&&sec!==lastTick&&document.visibilityState==='visible'&&!(trackOn()&&left<=10)){lastTick=sec;tone(sec<=10?1200:900,0,.03,sec<=10?.09:.05)}
     $('l-cap').textContent=`then ${grace(s)} min grace`;
-    $('l-done').innerHTML='<i></i><span>HOLD: DONE</span>';$('l-end').textContent='END EARLY';
+    $('l-done').innerHTML='<i></i><span>HOLD: DONE</span>';$('l-end').querySelector('span').textContent='END EARLY';
     const ph=left<Math.min(300,total*.2)?'late':frac>=.5?'mid':'start';
     if(ph!==phaseSaid){phaseSaid=ph;say(ph)}else if(now-sayAt>14000)$('l-say').textContent=''; if(now-sayAt>30000){Math.random()<.7?cheer(PUSH):say(ph)}
   }
