@@ -920,7 +920,10 @@ const RECRUIT={stoic:["Signal locked. Reporting for duty, {c}.","Heard you get t
  sarcastic:["Oh. You. Fine, I'll join.","Try not to get me killed, {c}."]};
 const CALLOUT="...anyone out there? ...{c}? Can you hear me?",WINDOW=25000;
 let tune=0,locked=false,lockSince=0,talkI=0,noiseSrc=null,noiseGain=null,radioT=null,staticT=null,askMode=false,relArm=null;
-function newSignal(mode){const o=newSignal0(mode);o.sp=o.sp||pick(Object.keys(SPECIES).filter(k=>!S.roster.map(x=>x.sp).includes(k)).concat(S.roster.length>=8?Object.keys(SPECIES):[]));o.coat=rollCoat(o.sp);return o}
+function newSignal(mode){const o=newSignal0(mode);o.sp=o.sp||pick(Object.keys(SPECIES).filter(k=>!S.roster.map(x=>x.sp).includes(k)).concat(S.roster.length>=8?Object.keys(SPECIES):[]));o.coat=rollCoat(o.sp);
+  /* first contact: three soldiers on three frequencies; scan between them and lock the one you want */
+  if(mode==='first'){const used=[],fs=[.17,.5,.83].sort(()=>Math.random()-.5);o.options=fs.map(f=>{let x;do{x=newSignal('opt')}while(used.includes(x.sp));used.push(x.sp);x.mode='first';x.f=(f+(Math.random()-.5)*.08+1)%1;return x})}
+  return o}
 function newSignal0(mode){const taken=S.roster.map(x=>x.sp),pool=Object.keys(SPECIES).filter(k=>!taken.includes(k)),c=pick(COATS);
   return{mode:mode||'first',full:fullName(),sp:null,coat:null,hue:0,trait:pick(Object.keys(TRAITS)),pers:pick(PERS),tic:pick(TICS),call:pick(CALLS),catch:makeCatch(),f:.15+Math.random()*.7}}
 const FIRST=['Dana','Marcus','Priya','Tomasz','Aiko','Kofi','Elena','Ravi','Siobhan','Mateo','Yusuf','Ingrid','Chidi','Mei','Bastien','Amara','Viktor','Lena','Hamza','Rosa','Desmond','Freya','Omar','Noor','Felix','Zara','Idris','Hana','Callum','Leila','Arjun','Greta','Kwame','Sana','Rafael','Maeve','Tariq','Juno','Emeka','Astrid'];
@@ -929,19 +932,22 @@ const fullName=()=>pick(FIRST)+' '+pick(LAST);
 const recruiting=()=>!!(S.signal&&S.signal.mode==='recruit');
 function startRecruit(){S.signal=newSignal('recruit');save();go('camp')}
 $('c-ticks').innerHTML=[...Array(24)].map((_,i)=>{const a=i/24*TAU,r1=i%2?101:95;return`<line class="tick" x1="${150+Math.sin(a)*r1}" y1="${150-Math.cos(a)*r1}" x2="${150+Math.sin(a)*104}" y2="${150-Math.cos(a)*104}"/>`}).join('');
-const strength=()=>{const d=Math.abs(tune-S.signal.f),cd=Math.min(d,1-d);return Math.max(0,1-cd/.16)};
+const near=()=>{const sg=S.signal;if(!sg.options)return sg;let best=sg.options[0],bd=9;for(const o of sg.options){const d=Math.abs(tune-o.f),cd=Math.min(d,1-d);if(cd<bd){bd=cd;best=o}}return best};
+let shownOpt=null;
+const strength=()=>{const d=Math.abs(tune-near().f),cd=Math.min(d,1-d);return Math.max(0,1-cd/.13)};
 function navBtns(skip,next){$('c-skip').hidden=!skip;if(skip)$('c-skip').textContent=skip;$('c-next').textContent=next;$('c-nav').style.gridTemplateColumns=skip?'':'1fr'}
 function drawCamp(){
   if(!S.signal){if(S.roster.length){go('task');return}S.signal=newSignal('first');save()}
   const sg=S.signal;locked=false;lockSince=0;talkI=0;askMode=false;
   $('c-talk').hidden=true;$('c-namebox').hidden=true;$('c-full').hidden=true;$('c-bars').hidden=false;$('c-msg').hidden=false;$('c-dial').classList.add('drag');
-  $('c-h').textContent=recruiting()?'Faint signal':'Incoming signal';$('c-pic').className='pic';$('c-pic').innerHTML=img(sg,{rank:1,alt:'A figure in the static'});
+  $('c-h').textContent=recruiting()?'Faint signal':'Incoming signal';shownOpt=null;$('c-pic').className='pic';$('c-pic').innerHTML=img(near(),{rank:1,alt:'A figure in the static'});
   tune=0;radioUpdate();staticLoop();clearInterval(radioT);
   if(recruiting()&&sg.lost){showLost();return}
   if(recruiting()&&!sg.asked){askMode=true;$('c-bars').hidden=true;$('c-msg').hidden=true;$('c-talk').hidden=false;
     $('c-say').textContent="Faint signal on the radio. Someone's out there.";navBtns('MORE TASKS','TUNE IN');return}
   radioT=setInterval(garble,140)}
 function radioUpdate(){const st=strength(),sg=S.signal;arc($('c-arc'),$('c-knob'),tune);
+  if(sg.options&&!locked){const nb=near();if(nb!==shownOpt){shownOpt=nb;$('c-pic').innerHTML=img(nb,{rank:1,alt:'A figure in the static'})}}
   const left=recruiting()&&sg.until&&!locked?Math.max(0,Math.ceil((sg.until-Date.now())/1000)):null;
   $('c-freq').textContent='FM '+(87.5+tune*20.5).toFixed(1)+(left!==null?` · ${left}s`:'');
   [...$('c-bars').children].forEach((b,i)=>b.classList.toggle('on',st>i/5+.05));
@@ -950,8 +956,8 @@ function radioUpdate(){const st=strength(),sg=S.signal;arc($('c-arc'),$('c-knob'
   if(locked||askMode)return;
   if(left===0){loseSignal();return}
   if(st>.93){if(!lockSince)lockSince=Date.now();else if(Date.now()-lockSince>700)lockOn()}else lockSince=0}
-function garble(){if(locked||askMode||cur!=='camp')return;const st=strength(),t=fill(S.signal,CALLOUT);
-  $('c-msg').textContent=!tuning&&tune===0?'TURN THE DIAL':st<.08?'~ static ~':[...t].map(ch=>ch===' '||Math.random()<st*st*1.15?ch:pick('░▒#%/~')).join('');
+function garble(){if(locked||askMode||cur!=='camp')return;const st=strength(),t=fill(near(),CALLOUT);
+  $('c-msg').textContent=!tuning&&tune===0?(S.signal.options?'TURN THE DIAL · 3 SIGNALS OUT THERE':'TURN THE DIAL'):st<.08?'~ static ~':[...t].map(ch=>ch===' '||Math.random()<st*st*1.15?ch:pick('░▒#%/~')).join('');
   if(st>.35&&Math.random()<st*.5)tone(300+Math.random()*500*st,0,.05,.03*st,'square')}
 function staticLoop(){cancelAnimationFrame(staticT);const cv=$('c-static'),cx=cv.getContext('2d'),W=cv.width,H=cv.height,id=cx.createImageData(W,H);
   (function f(){if(cur!=='camp'){return}const st=locked?1:strength(),a=Math.round((1-st)*200);
@@ -974,6 +980,7 @@ function showLost(){const sg=S.signal;$('c-dial').classList.remove('drag');$('c-
   $('c-bars').hidden=true;$('c-msg').hidden=true;$('c-talk').hidden=false;$('c-full').hidden=true;$('c-namebox').hidden=true;
   $('c-say').textContent=`It got away. It was a ${SPECIES[sg.sp]}.`;navBtns(null,'BACK TO BASE')}
 function lockOn(){locked=true;clearInterval(radioT);stopNoise();$('c-dial').classList.remove('drag');
+  if(S.signal.options){const o=near();delete S.signal.options;Object.assign(S.signal,o)}
   const sg=S.signal;sg.locked=true;save();$('c-pic').innerHTML=img(sg,{rank:1});$('c-pic').className='pic alive';
   flash();burst($('c-fx'),40,170);bigChord();buzz([60,40,120]);shake();
   const tier=coatTier(coatOf(sg));if(tier){setTimeout(()=>{party(tier==='LEGENDARY'?6:4);bigChord();note(`${tier} COAT: ${coatLabel(coatOf(sg))}`)},500)}
