@@ -402,7 +402,7 @@
     <div class="bar"><span class="close"></span><span class="wname">about.txt</span></div>
     <div class="about">
       <h1>Dr Adnaan Ghanchi</h1>
-      <p class="tagline">Physician, entrepreneur, academic. Big problems, small crowds.</p>
+      <p class="tagline">Physician, entrepreneur, academic. Neglected problems, massive impact.</p>
     </div>
   </div>
 </section>
@@ -481,7 +481,7 @@
       <a class="winlink" href="https://workout.adders.party">
         <div class="win w-gym">
           <div class="bar"><span class="close"></span><span class="wname">workout.exe</span><span class="ext">&#8599;</span></div>
-          <div class="pane"><canvas id="cv-gym" width="96" height="96" role="img" aria-label="Pixel kettlebell"></canvas></div>
+          <div class="pane"><canvas id="cv-gym" width="96" height="96" role="img" aria-label="Pixel figure doing a pull-up"></canvas></div>
         </div>
         <div class="label">20 Min Circuit</div>
       </a>
@@ -505,7 +505,7 @@
         </div>
         <div class="label">Rush</div>
       </a>
-      <p class="cap">(one task. don't let them die.)</p>
+      <p class="cap">(do the one thing. keep the squad alive.)</p>
     </div>
   </div>
 
@@ -717,6 +717,26 @@
     o.beginPath(); o.arc(cx, cy, R*.95, Math.PI*1.1, Math.PI*1.45); o.stroke();
   }
 
+  // pull-up: a figure hanging from the bar, mid-rep
+  function drawPullup(o, w, h){
+    o.lineCap = 'round'; o.lineJoin = 'round';
+    o.fillStyle = 'rgb(200,200,200)'; o.beginPath(); o.ellipse(w*.5, h*.95, w*.2, h*.03, 0, 0, Math.PI*2); o.fill();
+    o.strokeStyle = 'rgb(25,25,25)'; o.lineWidth = w*.06;
+    o.beginPath(); o.moveTo(w*.08, h*.13); o.lineTo(w*.92, h*.13); o.stroke();
+    o.lineWidth = w*.035; o.strokeStyle = 'rgb(120,120,120)'; o.beginPath(); o.moveTo(w*.12, h*.115); o.lineTo(w*.88, h*.115); o.stroke();
+    o.strokeStyle = 'rgb(45,45,45)'; o.lineWidth = w*.075;
+    o.beginPath(); o.moveTo(w*.33, h*.14); o.lineTo(w*.36, h*.3); o.lineTo(w*.43, h*.4); o.stroke();
+    o.beginPath(); o.moveTo(w*.67, h*.14); o.lineTo(w*.64, h*.3); o.lineTo(w*.57, h*.4); o.stroke();
+    o.fillStyle = shade(o, w*.5, h*.29, w*.1, 'rgb(225,225,225)', 'rgb(10,10,10)', -.4, -.5);
+    o.beginPath(); o.arc(w*.5, h*.29, w*.095, 0, Math.PI*2); o.fill();
+    o.fillStyle = shade(o, w*.5, h*.53, w*.16, 'rgb(205,205,205)', 'rgb(15,15,15)', -.5, -.4);
+    o.beginPath(); o.moveTo(w*.4, h*.4); o.lineTo(w*.6, h*.4); o.lineTo(w*.57, h*.66); o.lineTo(w*.43, h*.66); o.closePath(); o.fill();
+    o.strokeStyle = 'rgb(35,35,35)'; o.lineWidth = w*.08;
+    o.beginPath(); o.moveTo(w*.46, h*.65); o.lineTo(w*.42, h*.78); o.lineTo(w*.47, h*.88); o.stroke();
+    o.beginPath(); o.moveTo(w*.54, h*.65); o.lineTo(w*.58, h*.78); o.lineTo(w*.53, h*.88); o.stroke();
+    o.fillStyle = 'rgba(255,255,255,.9)'; o.beginPath(); o.ellipse(w*.465, h*.26, w*.025, w*.015, -.6, 0, Math.PI*2); o.fill();
+  }
+
   // kettlebell
   function drawKettlebell(o, w, h){
     var cx = w/2, cy = h*.6, R = w*.29;
@@ -797,7 +817,7 @@
     setPaper(moon ? '#141a45' : dark ? '#1b1816' : '#fbfaf6');
     var ink = moon ? '#efe6d2' : dark ? '#efe9df' : '#111111';
     dither1(document.getElementById('cv-armor'), drawPetri, moon ? '#7fe0d2' : dark ? '#14b8a6' : '#0a2563');
-    dither1(document.getElementById('cv-gym'), drawKettlebell, ink);
+    dither1(document.getElementById('cv-gym'), drawPullup, ink);
     dither1(document.getElementById('cv-pubs'), drawPapers, ink);
     dither1(document.getElementById('cv-sit'), drawEnso, ink);
     dither1(document.getElementById('cv-rush'), drawRush, ink, function(v){ v = (v - 120) * 1.35 + 140; return v < 0 ? 0 : v > 255 ? 255 : v; });
