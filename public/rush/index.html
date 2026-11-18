@@ -871,7 +871,7 @@ Object.assign(LINES.nervous,{rest:["Oh good, a break. I needed that.","Can we st
 Object.assign(LINES.sarcastic,{rest:["Finally. Mandatory break.","Wake me when it matters.","Ah, the best part of the job.","Don't rush back on my account."]});
 let baseT=null;
 function drawBase(){const s=S.roster.length?pickSel():null;if(!s){go('camp');return}
-  const brk=!!S.breakSince;$('s-base').classList.toggle('resting',brk);$('g2-pic').innerHTML=img(s);$('g2-pic').className='pic '+(brk?'sleep':'alive');
+  const brk=!!S.breakSince;$('s-base').classList.add('resting');$('g2-pic').innerHTML=img(s);$('g2-pic').className='pic '+(brk?'sleep':'alive');
   $('g2-h').textContent=brk?'On break':'Base';$('g2-sub').textContent=brk?'AT EASE':dname(s).toUpperCase();
   $('g2-zz').hidden=!brk;$('g2-time').hidden=!brk;
   $('g2-say').textContent=brk?line(s,'rest'):S.away?tic(s,`You were gone ${S.away} days, ${s.call}.`):(memory(s,'')||line(s,'greet'));S.away=0;
