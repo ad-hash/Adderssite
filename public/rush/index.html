@@ -203,6 +203,7 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
 .scard b{font-family:var(--pixel);font-size:11px;font-weight:400;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .scard .lv{font-family:var(--pixel);font-size:10px;color:var(--acc-ink)}
 .scard small{font-size:10px;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scard .rare{color:var(--acc-ink);font-family:var(--pixel)}
 .scard .xp{width:100%;height:7px;display:block;margin-top:2px}
 .scard.out{opacity:.55}.scard.out img{filter:grayscale(1)!important}
 .scard.arm{border-color:var(--warn);background:var(--win)}
@@ -217,7 +218,8 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
 @keyframes zz{0%{opacity:0;transform:translate(0,20px)}20%{opacity:1}100%{opacity:0;transform:translate(26px,-50px)}}
 .pic.sleep img{transform-origin:50% 100%;animation:snooze 3s ease-in-out infinite;filter:saturate(.7)}
 @keyframes snooze{50%{transform:scale(1.03,.95) rotate(-3deg)}}
-#s-base.resting .hero2,#s-base.resting .stats,#s-base.resting .head{filter:grayscale(.9);opacity:.75;transition:filter .6s,opacity .6s}
+#s-base .hero2,#s-base .stats,#s-base .head{transition:filter .8s,opacity .8s}
+#s-base.resting .hero2,#s-base.resting .stats,#s-base.resting .head{filter:grayscale(.9);opacity:.75}
 #s-base.resting .bigtime{color:var(--muted)}
 /* dragging your soldier mid-mission */
 .buddy .pic{touch-action:none;cursor:grab;position:relative;z-index:6}
@@ -591,6 +593,7 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
   <div class="pane">
     <p class="lab" id="dv-who"></p>
     <div class="devlist" id="dv-list"></div>
+    <div class="chips" id="dv-coats"></div>
     <div class="row2"><button class="btn small" id="dv-evo">PLAY EVOLUTION</button><button class="btn small" id="dv-win">PLAY PARTY</button></div>
     <button class="btn small" id="dv-enc">PLAY ENCOUNTER</button>
     <div class="row2"><button class="btn small" id="dv-off">DEV MODE OFF</button><button class="btn small go" id="dv-close">CLOSE</button></div>
@@ -721,14 +724,19 @@ function nickFor(s){const L=s.log||[];if(!L.length)return pick(['Ghost','Boots',
   if(late)return 'Photo Finish';if(avgM<=10)return 'Quickdraw';if(avgM>=45)return 'Marathon';if(avgSt>=3)return 'Checklist';if(early>=L.length*.6)return 'Early Bird';
   return {speedy:'Zoom',tough:'Iron',glutton:'Snacks',eager:'Keen'}[s.trait]||pick(['Ghost','Boots','Sparky','Ace','Tank'])}
 const dname=s=>{if(s.full){const [f,...l]=s.full.split(' ');return s.nick?`${f} "${s.nick}" ${l.join(' ')}`:s.full}return s.nick?`${s.name} "${s.nick}"`:s.name};
-function ensure(s){if(!s.pers)s.pers=pick(PERS);if(!s.tic)s.tic=pick(TICS);if(!s.call)s.call=pick(CALLS);if(!s.catch)s.catch=makeCatch();if(!s.log)s.log=[];if(s.nick===undefined)s.nick=null;if(!s.born)s.born=Date.now()}
+function ensure(s){if(s.hue){s.hue=0;s.coat='classic'}if(!RARE.includes(s.coat)&&!LEGEND.includes(s.coat))s.coat='classic';if(!s.pers)s.pers=pick(PERS);if(!s.tic)s.tic=pick(TICS);if(!s.call)s.call=pick(CALLS);if(!s.catch)s.catch=makeCatch();if(!s.log)s.log=[];if(s.nick===undefined)s.nick=null;if(!s.born)s.born=Date.now()}
 
 
 const rankOf=xp=>{let r=1;XP_AT.forEach((v,i)=>{if(xp>=v)r=i+1});return r};
 const pct=xp=>{const r=rankOf(xp);return r>=5?100:Math.round((xp-XP_AT[r-1])/(XP_AT[r]-XP_AT[r-1])*100)};
 const SIZE=[70,79,87,94,100];
-const img=(s,o={})=>{const rk=o.rank||(o.fallen&&s.rank)||rankOf(s.xp||0),src=o.fallen?`img/${s.sp}_fallen.webp`:`img/${s.sp}_${rk}.webp`,sz=o.full?100:SIZE[rk-1]||100;
-  const f=`style="width:${sz}%;height:${sz}%;${s.hue&&!o.fallen?`filter:hue-rotate(${s.hue}deg)`:''}"`;
+/* coats: classic by default; rare 1 in 20, legendary 1 in 60. Only the body is recoloured, pre-rendered in img/coats */
+const RARE=['camo','tiger','noir'],LEGEND=['lava','galaxy','gold'];
+const coatTier=c=>RARE.includes(c)?'RARE':LEGEND.includes(c)?'LEGENDARY':'';
+const rollCoat=()=>{const r=Math.random();return r<1/60?pick(LEGEND):r<1/60+1/20?pick(RARE):'classic'};
+const coatOf=s=>(s.coat&&(RARE.includes(s.coat)||LEGEND.includes(s.coat)))?s.coat:'classic';
+const img=(s,o={})=>{const rk=o.rank||(o.fallen&&s.rank)||rankOf(s.xp||0),c=coatOf(s),src=o.fallen?`img/${s.sp}_fallen.webp`:c==='classic'?`img/${s.sp}_${rk}.webp`:`img/coats/${s.sp}_${rk}_${c}.webp`,sz=o.full?100:SIZE[rk-1]||100;
+  const f=`style="width:${sz}%;height:${sz}%"`;
   return `<img class="spr${o.cls?' '+o.cls:''}" src="${src}" ${f} alt="${esc(o.alt||((s.name?s.name+', ':'')+SPECIES[s.sp]))}" draggable="false">`};
 const soldier=id=>S.roster.find(s=>s.id===id);
 const isOut=s=>s.medUntil&&s.medUntil>Date.now();
@@ -815,7 +823,7 @@ $('ti-next').onclick=()=>{save();blip();go('squad')};
 
 /* ---------- 3: squad: all three side by side ---------- */
 function cardHTML(x,pressed,extra=''){const r=rankOf(x.xp);ensure(x);
-  return `<button class="scard${isOut(x)?' out':''}" data-id="${x.id}" aria-pressed="${pressed}" ${extra}><span class="pic">${img(x)}</span><b>${esc(x.name)}</b><span class="lv">LV${r} ${RANKS[r-1].toUpperCase()}</span><small>${SPECIES[x.sp]} · ${TRAITS[x.trait].n}</small><small>${cap1(x.pers)}${x.nick?' · "'+esc(x.nick)+'"':''}</small><span class="xp"><i style="width:${pct(x.xp)}%"></i></span>${isOut(x)?'<small>MED BAY</small>':''}</button>`}
+  return `<button class="scard${isOut(x)?' out':''}" data-id="${x.id}" aria-pressed="${pressed}" ${extra}><span class="pic">${img(x)}</span><b>${esc(x.name)}</b><span class="lv">LV${r} ${RANKS[r-1].toUpperCase()}</span><small>${SPECIES[x.sp]} · ${TRAITS[x.trait].n}</small><small>${cap1(x.pers)}${x.nick?' · "'+esc(x.nick)+'"':''}</small>${coatTier(coatOf(x))?`<small class="rare">★ ${coatOf(x).toUpperCase()}</small>`:''}<span class="xp"><i style="width:${pct(x.xp)}%"></i></span>${isOut(x)?'<small>MED BAY</small>':''}</button>`}
 function drawSquad(){
   if(!S.draft.task.trim()){go('task');return}
   const s=pickSel(),out=isOut(s),n=S.roster.length;
@@ -878,7 +886,13 @@ function drawBase(){const s=S.roster.length?pickSel():null;if(!s){go('camp');ret
   $('g2-won').textContent=S.won;$('g2-streak').textContent=S.streak;$('g2-fallen').textContent=S.fallen.length;
   $('g2-go').textContent=brk?'BACK INTO THE FRAY':'ENTER THE FRAY';
   clearInterval(baseT);if(brk){const up=()=>{const t=Math.floor((Date.now()-S.breakSince)/1000);$('g2-time').textContent=`${pad(Math.floor(t/60))}:${pad(t%60)}`};up();baseT=setInterval(up,1000)}}
-$('g2-go').onclick=()=>{audio();const was=!!S.breakSince;delete S.breakSince;save();tone(440,0,.1,.1);tone(660,.1,.1,.1);tone(880,.2,.18,.12);buzz(40);if(!was)shake();go('task')};
+let entering=false;
+$('g2-go').onclick=async()=>{if(entering)return;entering=true;audio();delete S.breakSince;save();clearInterval(baseT);
+  /* colour floods back in, they snap to attention, then into the fray */
+  $('s-base').classList.remove('resting');$('g2-zz').hidden=true;$('g2-pic').className='pic alive';act($('g2-pic'),'a-flex');
+  const s=pickSel();if(s)$('g2-say').textContent=line(s,'start','');
+  tone(440,0,.1,.1);tone(660,.12,.1,.1);tone(880,.24,.2,.12);buzz(40);
+  await wait(950);shake();entering=false;go('task')};
 $('t-break').onclick=()=>{S.breakSince=Date.now();save();tone(660,0,.12,.08,'triangle');tone(440,.12,.2,.08,'triangle');go('base')};
 
 /* ---------- first contact: tune the radio until a soldier answers ---------- */
@@ -894,7 +908,7 @@ const RECRUIT={stoic:["Signal locked. Reporting for duty, {c}.","Heard you get t
 const CALLOUT="...anyone out there? ...{c}? Can you hear me?",WINDOW=25000;
 let tune=0,locked=false,lockSince=0,talkI=0,noiseSrc=null,noiseGain=null,radioT=null,staticT=null,askMode=false,relArm=null;
 function newSignal(mode){const taken=S.roster.map(x=>x.sp),pool=Object.keys(SPECIES).filter(k=>!taken.includes(k)),c=pick(COATS);
-  return{mode:mode||'first',full:fullName(),sp:pick(pool.length?pool:Object.keys(SPECIES)),coat:c[0],hue:c[1],trait:pick(Object.keys(TRAITS)),pers:pick(PERS),tic:pick(TICS),call:pick(CALLS),catch:makeCatch(),f:.15+Math.random()*.7}}
+  return{mode:mode||'first',full:fullName(),sp:pick(pool.length?pool:Object.keys(SPECIES)),coat:rollCoat(),hue:0,trait:pick(Object.keys(TRAITS)),pers:pick(PERS),tic:pick(TICS),call:pick(CALLS),catch:makeCatch(),f:.15+Math.random()*.7}}
 const FIRST=['Dana','Marcus','Priya','Tomasz','Aiko','Kofi','Elena','Ravi','Siobhan','Mateo','Yusuf','Ingrid','Chidi','Mei','Bastien','Amara','Viktor','Lena','Hamza','Rosa','Desmond','Freya','Omar','Noor','Felix','Zara','Idris','Hana','Callum','Leila','Arjun','Greta','Kwame','Sana','Rafael','Maeve','Tariq','Juno','Emeka','Astrid'];
 const LAST=['Okafor','Novak','Reyes','Lindqvist','Tanaka','Mensah','Kowalski','Haddad','Byrne','Moreau','Petrov','Chaudhry','Silva','Nakamura','Adeyemi','Fitzgerald','Kim','Rossi','Abara','Lund','Duarte','Hale','Sato','Osei','Volkov','Brennan','Iqbal','Castillo','Wren','Achebe','Holm','Varga','Quinn','Ndiaye','Moss','Ferreira','Kaur','Strand','Bello','Marsh'];
 const fullName=()=>pick(FIRST)+' '+pick(LAST);
@@ -917,7 +931,7 @@ function radioUpdate(){const st=strength(),sg=S.signal;arc($('c-arc'),$('c-knob'
   const left=recruiting()&&sg.until&&!locked?Math.max(0,Math.ceil((sg.until-Date.now())/1000)):null;
   $('c-freq').textContent='FM '+(87.5+tune*20.5).toFixed(1)+(left!==null?` · ${left}s`:'');
   [...$('c-bars').children].forEach((b,i)=>b.classList.toggle('on',st>i/5+.05));
-  const im=$('c-pic').querySelector('img');if(im&&!locked){im.style.opacity=(st*st).toFixed(2);im.style.filter=`brightness(${st>.8?(st-.8)*5:0}) blur(${((1-st)*6).toFixed(1)}px)`+(sg.hue?` hue-rotate(${sg.hue}deg)`:'')}
+  const im=$('c-pic').querySelector('img');if(im&&!locked){im.style.opacity=(st*st).toFixed(2);im.style.filter=`brightness(${st>.8?(st-.8)*5:0}) blur(${((1-st)*6).toFixed(1)}px)`}
   if(noiseGain)noiseGain.gain.value=soundOn&&!locked?.04+(1-st)*.12:0;
   if(locked||askMode)return;
   if(left===0){loseSignal();return}
@@ -948,7 +962,8 @@ function showLost(){const sg=S.signal;$('c-dial').classList.remove('drag');$('c-
 function lockOn(){locked=true;clearInterval(radioT);stopNoise();$('c-dial').classList.remove('drag');
   const sg=S.signal;sg.locked=true;save();$('c-pic').innerHTML=img(sg,{rank:1});$('c-pic').className='pic alive';
   flash();burst($('c-fx'),40,170);bigChord();buzz([60,40,120]);shake();
-  $('c-h').textContent='Signal locked';$('c-bars').hidden=true;$('c-msg').hidden=true;$('c-talk').hidden=false;talkI=0;speak()}
+  const tier=coatTier(coatOf(sg));if(tier){setTimeout(()=>{party(tier==='LEGENDARY'?6:4);bigChord();note(`${tier} COAT: ${coatOf(sg).toUpperCase()}`)},500)}
+  $('c-h').textContent=tier?`Signal locked · ${tier}`:'Signal locked';$('c-bars').hidden=true;$('c-msg').hidden=true;$('c-talk').hidden=false;talkI=0;speak()}
 const introLines=()=>(recruiting()?RECRUIT:INTRO)[S.signal.pers]||(recruiting()?RECRUIT:INTRO).stoic;
 function speak(){const sg=S.signal,L=introLines(),full=recruiting()&&S.roster.length>=MAX;$('c-full').hidden=true;$('c-namebox').hidden=true;
   if(talkI<L.length){$('c-say').textContent=fill(sg,L[talkI])+(talkI===0&&sg.full?` Name's ${sg.full}.`:'');tone(500+talkI*80,0,.05,.06);tone(700+talkI*80,.06,.05,.05);act($('c-pic'),pick(ACTS));
@@ -1260,9 +1275,11 @@ $('en-enlist').onclick=()=>{const e=S.encounter,name=$('en-name').value.trim();i
 function devSoldier(){let s=soldier(S.sel)||S.roster[0];if(!s){s={id:S.nextId++,name:'Test',full:fullName(),sp:'kitsune',coat:'Classic',hue:0,trait:'eager',xp:0,missions:0,scars:0,toughUsed:false,medUntil:0,born:Date.now()};S.roster.push(s);S.camped=true;S.drop=null}S.sel=s.id;return s}
 function drawDev(){const s=devSoldier(),r=rankOf(s.xp);
   $('dv-who').textContent=`${s.name.toUpperCase()} · ${SPECIES[s.sp].toUpperCase()} · ${RANKS[r-1].toUpperCase()}`;
-  $('dv-list').innerHTML=Object.keys(SPECIES).map(sp=>`<div class="devrow"><b>${SPECIES[sp]}</b>${[1,2,3,4,5].map(k=>`<button data-sp="${sp}" data-r="${k}" aria-pressed="${s.sp===sp&&r===k}" aria-label="${SPECIES[sp]} ${RANKS[k-1]}"><img class="spr" src="img/${sp}_${k}.webp" alt=""></button>`).join('')}<button data-sp="${sp}" data-r="0" aria-label="${SPECIES[sp]} fallen preview"><img class="spr" src="img/${sp}_fallen.webp" alt=""></button></div>`).join('');
+  $('dv-list').innerHTML=Object.keys(SPECIES).map(sp=>`<div class="devrow"><b>${SPECIES[sp]}</b>${[1,2,3,4,5].map(k=>`<button data-sp="${sp}" data-r="${k}" aria-pressed="${s.sp===sp&&r===k}" aria-label="${SPECIES[sp]} ${RANKS[k-1]}">${img({sp,coat:coatOf(s)},{rank:k,full:true,alt:''})}</button>`).join('')}<button data-sp="${sp}" data-r="0" aria-label="${SPECIES[sp]} fallen preview"><img class="spr" src="img/${sp}_fallen.webp" alt=""></button></div>`).join('');
   $('dv-evo').textContent=r<5?`EVOLVE TO ${RANKS[r].toUpperCase()}`:'EVOLVE (REPLAY)'}
-function openDev(){S.dev=true;save();$('devtag').hidden=false;drawDev();$('dev').classList.add('on');note('DEV MODE');tone(523,0,.1,.1);tone(784,.1,.1,.1);tone(1047,.2,.2,.1)}
+function drawCoats(){const s=devSoldier();$('dv-coats').innerHTML=['classic',...RARE,...LEGEND].map(c=>`<button class="chip" data-c="${c}" aria-pressed="${coatOf(s)===c}" style="min-width:0;font-size:11px;padding:4px 6px">${c}</button>`).join('')}
+$('dv-coats').onclick=e=>{const b=e.target.closest('[data-c]');if(!b)return;const s=devSoldier();s.coat=b.dataset.c;save();blip();drawCoats();drawDev();if(cur==='squad')drawSquad()};
+function openDev(){drawCoats();S.dev=true;save();$('devtag').hidden=false;drawDev();$('dev').classList.add('on');note('DEV MODE');tone(523,0,.1,.1);tone(784,.1,.1,.1);tone(1047,.2,.2,.1)}
 $('dv-list').onclick=e=>{const b=e.target.closest('button');if(!b)return;const s=devSoldier(),r=+b.dataset.r;
   if(!r){$('dev').classList.remove('on');$('g-pic').innerHTML='';const tmp={...s,sp:b.dataset.sp};go('letgo');$('g-look').textContent=`${s.name.toUpperCase()} LOOKS AT YOU`;$('g-pic').innerHTML=img(tmp,{fallen:true});$('g-name').textContent=s.name.toUpperCase();$('g-meta').textContent='PREVIEW';$('g-fell').textContent='';setHold(0);devPreview=true;return}
   s.sp=b.dataset.sp;s.hue=0;s.coat='Classic';s.xp=XP_AT[r-1];save();blip();drawDev();if(cur==='squad')drawSquad()};
@@ -1280,7 +1297,7 @@ if(S.dev)$('devtag').hidden=false;
 const RES={win:'WIN',late:'CLOSE CALL',excuse:'EXCUSE',tough:'PULLED THROUGH'};
 function drawFile(){const s=soldier(S.sel);if(!s){go('task');return}ensure(s);const r=rankOf(s.xp),L=s.log||[];
   $('f-pic').innerHTML=img(s);$('f-name').textContent=s.full||s.name;$('f-nick').textContent=s.nick?`"${s.nick}"`:'NICKNAME EARNED AT FIRST PROMOTION';
-  $('f-meta').textContent=`${RANKS[r-1]} ${SPECIES[s.sp]} · ${cap1(s.pers)} · ${TRAITS[s.trait].n}`;
+  $('f-meta').textContent=`${RANKS[r-1]} ${SPECIES[s.sp]} · ${cap1(s.pers)} · ${TRAITS[s.trait].n}`+(coatTier(coatOf(s))?` · ${coatTier(coatOf(s))} ${coatOf(s).toUpperCase()} COAT`:'');
   $('f-catch').textContent=tic(s,s.catch);
   $('f-won').textContent=s.missions;$('f-days').textContent=daysWith(s);$('f-close').textContent=L.filter(e=>e.r!=='win').length;
   $('f-log').innerHTML=L.length?L.slice().reverse().map(e=>`<div class="rec"><b>${fmtDate(e.d).toUpperCase()} · <span class="w">${RES[e.r]||'WIN'}</span> · ${e.m} MIN</b><span>${esc(e.t)}</span>${e.why?`<span>&quot;${esc(e.why)}&quot;</span>`:''}</div>`).join(''):'<p class="sub">No missions yet.</p>'}
