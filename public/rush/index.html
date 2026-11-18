@@ -194,6 +194,23 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
 .flog .rec b .w{color:var(--acc-ink)}
 .lastw{font-style:italic;font-size:13px;line-height:1.45}
 .plaque q{font-size:11px;font-style:italic;line-height:1.35}
+/* base and break room */
+.zz{position:absolute;right:16%;top:6%;font-family:var(--pixel);color:var(--muted);pointer-events:none}
+.zz i{position:absolute;font-style:normal;font-size:20px;opacity:0;animation:zz 3s linear infinite}
+.zz i:nth-child(2){animation-delay:1s;font-size:24px}.zz i:nth-child(3){animation-delay:2s;font-size:30px}
+@keyframes zz{0%{opacity:0;transform:translate(0,20px)}20%{opacity:1}100%{opacity:0;transform:translate(26px,-50px)}}
+.pic.sleep img{transform-origin:50% 100%;animation:snooze 3s ease-in-out infinite;filter:saturate(.7)}
+@keyframes snooze{50%{transform:scale(1.03,.95) rotate(-3deg)}}
+/* first contact radio */
+.static{position:absolute;left:21%;top:21%;width:58%;height:58%;border-radius:50%;image-rendering:pixelated;pointer-events:none}
+.sigbars{display:flex;justify-content:center;align-items:flex-end;gap:5px;height:26px;flex-shrink:0}
+.sigbars i{width:12px;border:2px solid var(--ink);background:var(--tile)}
+.sigbars i:nth-child(1){height:30%}.sigbars i:nth-child(2){height:47%}.sigbars i:nth-child(3){height:64%}.sigbars i:nth-child(4){height:82%}.sigbars i:nth-child(5){height:100%}
+.sigbars i.on{background:var(--acc)}
+.radio{margin:0;min-height:2.9em;text-align:center;font-size:14px;line-height:1.45;flex-shrink:0;letter-spacing:.02em;white-space:pre-wrap}
+.talk{display:flex;flex-direction:column;gap:10px;flex-shrink:0}
+.speech{position:relative;border:3px solid var(--ink);background:var(--tile);padding:12px 14px;font-size:15px;line-height:1.45;min-height:5.2em}
+.speech::before{content:"";position:absolute;left:50%;top:-12px;margin-left:-10px;border:10px solid transparent;border-top:0;border-bottom:12px solid var(--ink)}
 /* encounter */
 .enc-stage{position:relative;flex:1;min-height:170px;overflow:hidden;border:3px solid var(--ink);background:var(--tile)}
 .bush{position:absolute;bottom:-14px;width:52%;height:40%;background:var(--acc);border:3px solid var(--ink);border-radius:50% 50% 0 0;z-index:2}
@@ -373,7 +390,7 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
         <div class="addrow"><input class="field-in" id="t-step" maxlength="40" autocomplete="off" enterkeyhint="done" placeholder="+ Break it down (optional)" aria-label="Add a step"><button id="t-add">ADD</button></div>
       </div></section>
     <button class="btn go" id="t-next">NEXT: SET CLOCK</button>
-    <div class="foot"><span id="b-foot"></span><button id="b-slot" hidden>RECRUIT</button></div>
+    <div class="foot"><span id="b-foot"></span><button id="b-slot" hidden>RECRUIT</button><button id="t-break">EXIT THE FRAY</button></div>
   </section>
 
   <!-- 2: TIME -->
@@ -405,13 +422,33 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
     <div class="navrow"><button class="btn" data-go="time">BACK</button><button class="btn go" id="b-go">DEPLOY!</button></div>
   </section>
 
-  <!-- BOOT CAMP (first ever open) -->
+  <!-- BASE: shown on every reopen, and as the break room -->
+  <section class="screen" id="s-base">
+    <div class="head"><h1 id="g2-h">Base</h1><span class="lab" id="g2-sub"></span></div>
+    <div class="hero2"><div class="pic alive" id="g2-pic"></div><div class="sq-bub" id="g2-say"></div><div class="zz" id="g2-zz" hidden aria-hidden="true"><i>z</i><i>z</i><i>Z</i></div></div>
+    <div class="bigtime" id="g2-time" hidden>00:00</div>
+    <div class="stats"><div class="stat"><b id="g2-won">0</b><small>wins</small></div><div class="stat"><b id="g2-streak">0</b><small>streak</small></div><div class="stat"><b id="g2-fallen">0</b><small>fallen</small></div></div>
+    <button class="btn go" id="g2-go">ENTER THE FRAY</button>
+  </section>
+
+  <!-- FIRST CONTACT: tune the radio to find your first soldier -->
   <section class="screen" id="s-camp">
-    <div class="head"><h1>Boot camp</h1><span class="sub">FOCUS DRILL</span></div>
-    <p class="sub" id="c-sub">One crate. Eyes on it. Only it.</p>
-    <div class="arena" id="c-arena"><div class="fx" id="c-fx"></div></div>
-    <p class="camp-msg" id="c-msg"></p>
-    <button class="btn go" id="c-go">BEGIN DRILL</button>
+    <div class="head"><h1 id="c-h">Incoming signal</h1><span class="lab" id="c-freq">FM 87.5</span></div>
+    <div class="dialwrap">
+      <div class="dial drag" id="c-dial" aria-label="Radio dial: drag round to tune">
+        <svg class="ring" viewBox="0 0 300 300" aria-hidden="true"><circle class="track" cx="150" cy="150" r="112"/><g id="c-ticks"></g><circle class="arc" id="c-arc" cx="150" cy="150" r="112" transform="rotate(-90 150 150)"/><rect class="knob" id="c-knob" width="18" height="18"/></svg>
+        <div class="pic" id="c-pic"></div>
+        <canvas class="static" id="c-static" width="64" height="64" aria-hidden="true"></canvas>
+        <div class="fx" id="c-fx"></div>
+      </div>
+    </div>
+    <div class="sigbars" id="c-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+    <p class="radio" id="c-msg" aria-live="polite"></p>
+    <div class="talk" id="c-talk" hidden>
+      <div class="speech" id="c-say"></div>
+      <div id="c-namebox" hidden><input class="field-in" id="c-name" maxlength="18" autocomplete="off" enterkeyhint="done" placeholder="What do I go by?" aria-label="Name your soldier"></div>
+      <button class="btn go" id="c-next">NEXT</button>
+    </div>
   </section>
 
   <!-- SUPPLY DROP -->
@@ -700,8 +737,9 @@ function go(name){
   cur=name;document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id==='s-'+name));
   if(name!=='live'){delete root.dataset.bleed;delete root.dataset.urgent}
   if(name!=='return')$('r-pic').classList.remove('dance');
-  ({file:drawFile,task:drawTask,time:drawTime,squad:drawSquad,camp:drawCamp,drop:drawDrop,live:drawLive,memorial:drawMemorial,enc:drawEnc}[name]||(()=>{}))();
+  ({base:drawBase,file:drawFile,task:drawTask,time:drawTime,squad:drawSquad,camp:drawCamp,drop:drawDrop,live:drawLive,memorial:drawMemorial,enc:drawEnc}[name]||(()=>{}))();
   if(name!=='enc')cancelAnimationFrame(meterRAF);
+  if(name!=='camp'){stopNoise();clearInterval(radioT)}
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b)go(b.dataset.go)});
 $('memb').onclick=()=>{if(S.mission&&cur==='live'){note('FINISH THE MISSION FIRST');return}if(['honest','letgo'].includes(cur))return;go(cur==='memorial'?'task':'memorial')};
@@ -774,36 +812,77 @@ function addStep(){const v=$('t-step').value.trim();if(!v)return;if(S.draft.step
 $('t-add').onclick=addStep;$('t-step').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();addStep()}};
 $('t-steps').onclick=e=>{const b=e.target.closest('.step');if(b){S.draft.steps.splice(+b.dataset.i,1);save();drawSteps0()}};
 
-/* ---------- boot camp: the focus test ---------- */
-const SLOT_X=['0%','35%','70%'];let campBusy=false;
-function drawCamp(){if(S.roster.length){go('task');return}campBusy=false;$('c-go').hidden=false;$('c-msg').textContent='';$('c-arena').querySelectorAll('.crate').forEach(x=>x.remove())}
-$('c-go').onclick=async()=>{
-  if(campBusy)return;campBusy=true;audio();$('c-go').hidden=true;
-  S.drop=makeDrop();S.drop.camp=true;S.drop.landed=true;save();
-  const arena=$('c-arena'),pos=[0,1,2],t=Math.floor(Math.random()*3);
-  arena.querySelectorAll('.crate').forEach(x=>x.remove());
-  const els=S.drop.crates.map((c,i)=>{const d=document.createElement('div');d.innerHTML=`<button class="crate" data-i="${i}" disabled aria-label="Crate ${i+1}"><div class="peek">${img(c,{rank:1,cls:'sil',alt:'Mystery silhouette'})}</div><div class="box"><span>?</span></div></button>`;
-    const el=d.firstChild;el.style.left=SLOT_X[i];arena.appendChild(el);return el});
-  $('c-msg').textContent='';slam();await wait(1200);
-  const tim=els[t].querySelector('img');tim.classList.remove('sil');els[t].classList.add('target');jingle();buzz(40);
-  $('c-msg').textContent='THIS ONE.';await wait(2000);
-  tim.classList.add('sil');els[t].classList.remove('target');els.forEach(e=>e.classList.add('shut'));noise(0,.25,.3);
-  $('c-msg').textContent='DON\'T LOOK AWAY.';await wait(1000);
-  let d=640;
-  for(let k=0;k<9;k++){const a=Math.floor(Math.random()*3),b=(a+1+Math.floor(Math.random()*2))%3,ia=pos.indexOf(a),ib=pos.indexOf(b);
-    pos[ia]=b;pos[ib]=a;[ia,ib].forEach(i=>{els[i].style.transitionDuration=d+'ms';els[i].style.left=SLOT_X[pos[i]]});
-    tone(200+k*35,0,.09,.09,'triangle');buzz(10);await wait(d+50);d=Math.max(250,d*.86)}
-  $('c-msg').textContent='WHICH ONE?';els.forEach(e=>e.disabled=false);
-  arena.onclick=async e=>{
-    const b=e.target.closest('.crate');if(!b||b.disabled)return;arena.onclick=null;els.forEach(x=>x.disabled=true);
-    const i=+b.dataset.i,hit=i===t;S.drop.chosen=i;S.drop.bonus=hit?50:0;S.camped=true;save();
-    b.classList.add('chosen');for(let k=0;k<5;k++)tone(300+k*90,k*.12,.1,.1);await wait(950);
-    b.classList.remove('shut');
-    if(hit){b.classList.add('target');flash();burst($('c-fx'),40,200);slam();jingle();shake();$('c-msg').textContent='LOCKED ON. +50 XP'}
-    else{b.classList.add('wrong');els[t].classList.remove('shut');els[t].classList.add('target');tone(220,0,.5,.14,'sawtooth',90);$('c-msg').textContent='EYES WANDERED.'}
-    await wait(2300);go('drop');reveal(true);
-  };
-};
+/* ---------- base: enter the fray, or take a break ---------- */
+Object.assign(LINES.stoic,{rest:["At ease.","Rest is part of the mission.","Recharging, {c}.","Stand down. Breathe.","Good soldiers rest too."]});
+Object.assign(LINES.hype,{rest:["Nap time! Then WAR!","Refuel and reload!","Break? Okay but I'm still hyped.","Snacks! Stretch! Then GO!"]});
+Object.assign(LINES.nervous,{rest:["Oh good, a break. I needed that.","Can we stay here a bit?","Quiet. Nice. Safe.","Breathing. Just breathing."]});
+Object.assign(LINES.sarcastic,{rest:["Finally. Mandatory break.","Wake me when it matters.","Ah, the best part of the job.","Don't rush back on my account."]});
+let baseT=null;
+function drawBase(){const s=S.roster.length?pickSel():null;if(!s){go(S.camped?'drop':'camp');return}
+  const brk=!!S.breakSince;$('g2-pic').innerHTML=img(s);$('g2-pic').className='pic '+(brk?'sleep':'alive');
+  $('g2-h').textContent=brk?'On break':'Base';$('g2-sub').textContent=brk?'AT EASE':dname(s).toUpperCase();
+  $('g2-zz').hidden=!brk;$('g2-time').hidden=!brk;
+  $('g2-say').textContent=brk?line(s,'rest'):S.away?tic(s,`You were gone ${S.away} days, ${s.call}.`):(memory(s,'')||line(s,'greet'));S.away=0;
+  $('g2-won').textContent=S.won;$('g2-streak').textContent=S.streak;$('g2-fallen').textContent=S.fallen.length;
+  $('g2-go').textContent=brk?'BACK INTO THE FRAY':'ENTER THE FRAY';
+  clearInterval(baseT);if(brk){const up=()=>{const t=Math.floor((Date.now()-S.breakSince)/1000);$('g2-time').textContent=`${pad(Math.floor(t/60))}:${pad(t%60)}`};up();baseT=setInterval(up,1000)}}
+$('g2-go').onclick=()=>{audio();const was=!!S.breakSince;delete S.breakSince;save();tone(440,0,.1,.1);tone(660,.1,.1,.1);tone(880,.2,.18,.12);buzz(40);if(!was)shake();go('task')};
+$('t-break').onclick=()=>{S.breakSince=Date.now();save();tone(660,0,.12,.08,'triangle');tone(440,.12,.2,.08,'triangle');go('base')};
+
+/* ---------- first contact: tune the radio until a soldier answers ---------- */
+const INTRO={
+ stoic:["Signal locked. You found me, {c}.","The drill: you pick ONE task. You set the clock. I go in with you.","Beat the clock and I rank up. Let the clock win and I don't come back.","Let's get as many tasks smashed as possible together."],
+ hype:["YOU FOUND ME!! {c}!!","Okay okay: you pick ONE task, set the clock, and I charge in with you!","Beat the clock and I level up! Let it win and... I'm gone. Forever. So don't!","Let's get as many tasks smashed as possible together!!"],
+ nervous:["Oh! Oh thank goodness. You found me, {c}.","So... you pick one task. Just one. Set the clock. I'll come with you.","If we beat the clock I get stronger. If we don't... I don't make it. Please let me make it.","Let's get as many tasks smashed as possible together. Gently."],
+ sarcastic:["Finally. Took you long enough, {c}.","Rules: one task, one clock, I tag along. Riveting.","Beat the clock and I get promoted. Lose, and I'm toast. No pressure.","Let's get as many tasks smashed as possible together. Apparently."]};
+const CALLOUT="...anyone out there? ...{c}? Can you hear me?";
+let tune=0,locked=false,lockSince=0,talkI=0,noiseSrc=null,noiseGain=null,radioT=null,staticT=null;
+function newSignal(){const c=pick(COATS),sp=pick(Object.keys(SPECIES));return{sp,coat:c[0],hue:c[1],trait:pick(Object.keys(TRAITS)),pers:pick(PERS),tic:pick(TICS),call:pick(CALLS),catch:makeCatch(),f:.15+Math.random()*.7}}
+$('c-ticks').innerHTML=[...Array(24)].map((_,i)=>{const a=i/24*TAU,r1=i%2?101:95;return`<line class="tick" x1="${150+Math.sin(a)*r1}" y1="${150-Math.cos(a)*r1}" x2="${150+Math.sin(a)*104}" y2="${150-Math.cos(a)*104}"/>`}).join('');
+const strength=()=>{const d=Math.abs(tune-S.signal.f),cd=Math.min(d,1-d);return Math.max(0,1-cd/.16)};
+function drawCamp(){if(S.roster.length){go('task');return}
+  if(!S.signal){S.signal=newSignal();save()}
+  locked=false;lockSince=0;talkI=0;$('c-talk').hidden=true;$('c-namebox').hidden=true;$('c-bars').hidden=false;$('c-msg').hidden=false;$('c-dial').classList.add('drag');
+  $('c-h').textContent='Incoming signal';$('c-pic').className='pic';$('c-pic').innerHTML=img(S.signal,{rank:1,alt:'A figure in the static'});
+  tune=0;radioUpdate();clearInterval(radioT);radioT=setInterval(garble,140);staticLoop()}
+function radioUpdate(){const st=strength();arc($('c-arc'),$('c-knob'),tune);
+  $('c-freq').textContent='FM '+(87.5+tune*20.5).toFixed(1);
+  [...$('c-bars').children].forEach((b,i)=>b.classList.toggle('on',st>i/5+.05));
+  const im=$('c-pic').querySelector('img');if(im&&!locked){im.style.opacity=(st*st).toFixed(2);im.style.filter=`brightness(${st>.8?(st-.8)*5:0}) blur(${((1-st)*6).toFixed(1)}px)`+(S.signal.hue?` hue-rotate(${S.signal.hue}deg)`:'')}
+  if(noiseGain)noiseGain.gain.value=soundOn&&!locked?.04+(1-st)*.12:0;
+  if(!locked){if(st>.93){if(!lockSince)lockSince=Date.now();else if(Date.now()-lockSince>700)lockOn()}else lockSince=0}}
+function garble(){if(locked||cur!=='camp')return;const st=strength(),t=fill(S.signal,CALLOUT);
+  $('c-msg').textContent=!tuning&&tune===0?'TURN THE DIAL':st<.08?'~ static ~':[...t].map(ch=>ch===' '||Math.random()<st*st*1.15?ch:pick('░▒#%/~')).join('');
+  if(st>.35&&Math.random()<st*.5)tone(300+Math.random()*500*st,0,.05,.03*st,'square')}
+function staticLoop(){cancelAnimationFrame(staticT);const cv=$('c-static'),cx=cv.getContext('2d'),W=cv.width,H=cv.height,id=cx.createImageData(W,H);
+  (function f(){if(cur!=='camp'){return}const st=locked?1:strength(),a=Math.round((1-st)*200);
+    for(let i=0;i<W*H;i++){const v=Math.random()*255|0,o=i*4;id.data[o]=id.data[o+1]=id.data[o+2]=v;id.data[o+3]=Math.random()<.85?a:0}
+    cx.putImageData(id,0,0);staticT=requestAnimationFrame(f)})()}
+function startNoise(){if(noiseSrc||!ac)return;try{const n=ac.sampleRate*2,b=ac.createBuffer(1,n,ac.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;
+  noiseSrc=ac.createBufferSource();noiseSrc.buffer=b;noiseSrc.loop=true;noiseGain=ac.createGain();noiseGain.gain.value=0;
+  const bp=ac.createBiquadFilter();bp.type='bandpass';bp.frequency.value=1800;bp.Q.value=.6;noiseSrc.connect(bp).connect(noiseGain).connect(ac.destination);noiseSrc.start()}catch{}}
+function stopNoise(){try{noiseSrc&&noiseSrc.stop()}catch{}noiseSrc=null;noiseGain=null}
+let tuning=false,lastBuzz=0;
+function tuneAt(e){const r=$('c-dial').getBoundingClientRect(),x=e.clientX-r.left-r.width/2,y=e.clientY-r.top-r.height/2;tune=((Math.atan2(x,-y)+TAU)%TAU)/TAU;
+  const st=strength(),lvl=Math.floor(st*5);if(lvl!==lastBuzz){lastBuzz=lvl;buzz(lvl*4+2);if(st>.2)tone(400+lvl*120,0,.04,.05)}radioUpdate()}
+$('c-dial').addEventListener('pointerdown',e=>{if(cur!=='camp'||locked)return;audio();startNoise();tuning=true;try{$('c-dial').setPointerCapture(e.pointerId)}catch{}tuneAt(e)});
+$('c-dial').addEventListener('pointermove',e=>{if(tuning&&!locked)tuneAt(e)});
+['pointerup','pointercancel'].forEach(ev=>$('c-dial').addEventListener(ev,()=>{tuning=false}));
+setInterval(()=>{if(cur==='camp'&&!locked&&S.signal)radioUpdate()},120);
+function lockOn(){locked=true;clearInterval(radioT);stopNoise();$('c-dial').classList.remove('drag');
+  const sg=S.signal;$('c-pic').innerHTML=img(sg,{rank:1});$('c-pic').className='pic alive';
+  flash();burst($('c-fx'),40,170);bigChord();buzz([60,40,120]);shake();
+  $('c-h').textContent='Signal locked';$('c-bars').hidden=true;$('c-msg').hidden=true;$('c-talk').hidden=false;talkI=0;speak()}
+function speak(){const sg=S.signal,L=INTRO[sg.pers]||INTRO.stoic;
+  if(talkI<L.length){$('c-say').textContent=fill(sg,L[talkI]);tone(500+talkI*80,0,.05,.06);tone(700+talkI*80,.06,.05,.05);act($('c-pic'),pick(ACTS));
+    $('c-next').textContent=talkI===L.length-1?'LET\'S GO':'NEXT';$('c-namebox').hidden=true}
+  else{$('c-say').textContent=fill(sg,'One more thing, {c}. What do I go by?');$('c-namebox').hidden=false;$('c-next').textContent='ENLIST';setTimeout(()=>$('c-name').focus(),60)}}
+$('c-next').onclick=()=>{const sg=S.signal,L=INTRO[sg.pers]||INTRO.stoic;
+  if(talkI<L.length){talkI++;speak();return}
+  const name=$('c-name').value.trim();if(!name){note('NAME ME, COMMANDER');$('c-name').focus();return}
+  const id=S.nextId++;S.roster.push({id,name,sp:sg.sp,coat:sg.coat,hue:sg.hue,trait:sg.trait,pers:sg.pers,tic:sg.tic,call:sg.call,catch:sg.catch,xp:0,missions:0,scars:0,toughUsed:false,medUntil:0,born:Date.now(),log:[],nick:null});
+  S.sel=id;S.signal=null;S.camped=true;save();$('c-name').value='';jingle();party(3);note(name.toUpperCase()+' ENLISTED');go('task')};
+$('c-name').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('c-next').click()}});
 
 /* ---------- supply drop ---------- */
 function makeDrop(){const taken=S.roster.map(s=>s.sp);let pool=Object.keys(SPECIES).filter(k=>!taken.includes(k));
@@ -1006,7 +1085,7 @@ function drawMemorial(){
 }
 let resetArmed=0;
 $('w-reset').onclick=()=>{if(Date.now()-resetArmed>3000){resetArmed=Date.now();note('TAP AGAIN TO WIPE EVERYTHING');return}
-  S={roster:[],fallen:[],record:[],drop:null,mission:null,won:0,streak:0,lost:0,nextId:1,sel:null,mins:25,draft:{task:'',steps:[]}};save();go('camp')};
+  S={roster:[],fallen:[],record:[],drop:null,signal:null,mission:null,won:0,streak:0,lost:0,nextId:1,sel:null,mins:25,draft:{task:'',steps:[]}};save();go('camp')};
 
 /* ---------- encounters: 20% chance after a win; you only see who it was if it gets away ---------- */
 function makeOne(){const taken=S.roster.map(s=>s.sp),pool=Object.keys(SPECIES).filter(k=>!taken.includes(k)),c=pick(COATS);
@@ -1076,7 +1155,7 @@ function drawFile(){const s=soldier(S.sel);if(!s){go('task');return}ensure(s);co
 (function boot(){
   if(S.mission&&!soldier(S.mission.sid))S.mission=null;
   if(S.mission){if(S.mission.over||Date.now()>=S.mission.graceEnd)endMission(true);else go('live')}
-  else{if(S.won||S.fallen.length||S.roster.length)S.camped=true;go(S.encounter&&S.roster.length?'enc':S.roster.length?'task':(S.camped?'drop':'camp'))}
+  else{if(S.won||S.fallen.length||S.roster.length)S.camped=true;go(S.encounter&&S.roster.length?'enc':S.roster.length?'base':(S.camped?'drop':'camp'))}
 })();
 </script>
 </body>
