@@ -87,7 +87,8 @@ input,textarea{font:inherit;color:var(--ink)}
 .field-in{width:100%;height:44px;border:2px solid var(--ink);background:var(--tile);padding:0 10px;font-size:16px;border-radius:0;-webkit-appearance:none}
 textarea.field-in{height:auto;padding:8px 10px;resize:none}
 .tag{display:inline-block;font-size:11px;border:2px solid var(--ink);padding:0 6px;line-height:18px;background:var(--tile)}
-.spr{display:block;width:100%;height:100%;object-fit:contain;-webkit-user-drag:none;user-select:none;pointer-events:none}
+.pic{display:flex;align-items:flex-end;justify-content:center}
+.spr{display:block;width:100%;height:100%;flex-shrink:0;object-fit:contain;-webkit-user-drag:none;user-select:none;pointer-events:none}
 .dial .pic{pointer-events:auto}
 .sil{filter:brightness(0)!important;opacity:.85}
 .whiteout{filter:brightness(0) invert(1)!important}
@@ -216,6 +217,13 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
 @keyframes zz{0%{opacity:0;transform:translate(0,20px)}20%{opacity:1}100%{opacity:0;transform:translate(26px,-50px)}}
 .pic.sleep img{transform-origin:50% 100%;animation:snooze 3s ease-in-out infinite;filter:saturate(.7)}
 @keyframes snooze{50%{transform:scale(1.03,.95) rotate(-3deg)}}
+#s-base.resting .hero2,#s-base.resting .stats,#s-base.resting .head{filter:grayscale(.9);opacity:.75;transition:filter .6s,opacity .6s}
+#s-base.resting .bigtime{color:var(--muted)}
+/* dragging your soldier mid-mission */
+.buddy .pic{touch-action:none;cursor:grab;position:relative;z-index:6}
+.buddy .pic.held{cursor:grabbing}
+.buddy .pic.held img{animation:dangle .35s ease-in-out infinite!important}
+@keyframes dangle{0%,100%{transform:rotate(-9deg) scale(1.08)}50%{transform:rotate(9deg) scale(1.08)}}
 /* first contact radio */
 .static{position:absolute;left:21%;top:21%;width:58%;height:58%;border-radius:50%;image-rendering:pixelated;pointer-events:none}
 .sigbars{display:flex;justify-content:center;align-items:flex-end;gap:5px;height:26px;flex-shrink:0}
@@ -714,8 +722,9 @@ function ensure(s){if(!s.pers)s.pers=pick(PERS);if(!s.tic)s.tic=pick(TICS);if(!s
 
 const rankOf=xp=>{let r=1;XP_AT.forEach((v,i)=>{if(xp>=v)r=i+1});return r};
 const pct=xp=>{const r=rankOf(xp);return r>=5?100:Math.round((xp-XP_AT[r-1])/(XP_AT[r]-XP_AT[r-1])*100)};
-const img=(s,o={})=>{const src=o.fallen?`img/${s.sp}_fallen.webp`:`img/${s.sp}_${o.rank||rankOf(s.xp||0)}.webp`;
-  const f=s.hue&&!o.fallen?`style="filter:hue-rotate(${s.hue}deg)"`:'';
+const SIZE=[70,79,87,94,100];
+const img=(s,o={})=>{const rk=o.rank||(o.fallen&&s.rank)||rankOf(s.xp||0),src=o.fallen?`img/${s.sp}_fallen.webp`:`img/${s.sp}_${rk}.webp`,sz=o.full?100:SIZE[rk-1]||100;
+  const f=`style="width:${sz}%;height:${sz}%;${s.hue&&!o.fallen?`filter:hue-rotate(${s.hue}deg)`:''}"`;
   return `<img class="spr${o.cls?' '+o.cls:''}" src="${src}" ${f} alt="${esc(o.alt||((s.name?s.name+', ':'')+SPECIES[s.sp]))}" draggable="false">`};
 const soldier=id=>S.roster.find(s=>s.id===id);
 const isOut=s=>s.medUntil&&s.medUntil>Date.now();
@@ -834,6 +843,20 @@ $('t-add').onclick=addStep;$('t-step').onkeydown=e=>{if(e.key==='Enter'){e.preve
 $('t-steps').onclick=e=>{const b=e.target.closest('.step');if(b){S.draft.steps.splice(+b.dataset.i,1);save();drawSteps0()}};
 
 /* ---------- base: enter the fray, or take a break ---------- */
+Object.assign(LINES.stoic,{grab:["Repositioning.","Noted.","Moving to new cover.","Steady hands, {c}."]});
+Object.assign(LINES.hype,{grab:["WHEEE!","Again! Again!","I'm FLYING!","Higher, {c}!"]});
+Object.assign(LINES.nervous,{grab:["Put me down put me down!","Too high!","Careful careful!","My stomach!"]});
+Object.assign(LINES.sarcastic,{grab:["Personal space, {c}.","Do you mind?","Oh good, turbulence.","Put me back. Now."]});
+/* fidget: drag your soldier anywhere while the clock runs */
+{const el=$('l-pic');let on=false,moved=false,sx=0,sy=0,ox=0,oy=0,x=0,y=0;
+  el.addEventListener('pointerdown',e=>{if(cur!=='live')return;on=true;moved=false;sx=e.clientX;sy=e.clientY;ox=x;oy=y;try{el.setPointerCapture(e.pointerId)}catch{}});
+  el.addEventListener('pointermove',e=>{if(!on)return;const dx=e.clientX-sx,dy=e.clientY-sy;
+    if(!moved&&Math.hypot(dx,dy)>6){moved=true;el.classList.add('held');buzz(10);if(S.mission&&!root.dataset.bleed){$('l-say').textContent=line(soldier(S.mission.sid),'grab');sayAt=Date.now()}}
+    if(moved){x=Math.max(-innerWidth*.45,Math.min(innerWidth*.45,ox+dx));y=Math.max(-innerHeight*.75,Math.min(30,oy+dy));el.style.transform=`translate(${x}px,${y}px)`}});
+  const drop=()=>{if(!on)return;on=false;el.classList.remove('held');if(moved){tone(90,0,.12,.25,'sine',50);buzz(25);act(el,'a-hop')}};
+  el.addEventListener('pointerup',drop);el.addEventListener('pointercancel',drop);
+  el.addEventListener('dblclick',()=>{x=y=0;el.style.transition='transform .3s';el.style.transform='';setTimeout(()=>el.style.transition='',320)});
+  window.resetBuddy=()=>{x=y=0;el.style.transform=''}}
 Object.assign(LINES.stoic,{evolve:["Stronger. Ready.","New rank. Same mission.","I feel it, {c}. Let's work.","Promotion accepted.","Harder to kill now."],bye:["It was an honour, {c}.","Dismissed. Good luck out there.","Carry on without me."]});
 Object.assign(LINES.hype,{evolve:["LOOK AT ME NOW!","I'M HUGE!","New me! Same hype!","Did you SEE that?!","Level up, baby!"],bye:["Best tour EVER! Bye!!","I'll miss you SO much!","Go smash stuff for me!"]});
 Object.assign(LINES.nervous,{evolve:["Is... is this me? I look scary.","I feel brave-ish!","Bigger. Still nervous.","Oh wow. Okay. Wow.","Don't make me fight bigger things."],bye:["Oh. Okay. Bye. Be safe.","I'll be fine. Probably.","Don't forget me, {c}."]});
@@ -844,7 +867,7 @@ Object.assign(LINES.nervous,{rest:["Oh good, a break. I needed that.","Can we st
 Object.assign(LINES.sarcastic,{rest:["Finally. Mandatory break.","Wake me when it matters.","Ah, the best part of the job.","Don't rush back on my account."]});
 let baseT=null;
 function drawBase(){const s=S.roster.length?pickSel():null;if(!s){go(S.camped?'drop':'camp');return}
-  const brk=!!S.breakSince;$('g2-pic').innerHTML=img(s);$('g2-pic').className='pic '+(brk?'sleep':'alive');
+  const brk=!!S.breakSince;$('s-base').classList.toggle('resting',brk);$('g2-pic').innerHTML=img(s);$('g2-pic').className='pic '+(brk?'sleep':'alive');
   $('g2-h').textContent=brk?'On break':'Base';$('g2-sub').textContent=brk?'AT EASE':dname(s).toUpperCase();
   $('g2-zz').hidden=!brk;$('g2-time').hidden=!brk;
   $('g2-say').textContent=brk?line(s,'rest'):S.away?tic(s,`You were gone ${S.away} days, ${s.call}.`):(memory(s,'')||line(s,'greet'));S.away=0;
@@ -951,7 +974,7 @@ $('d-enlist').onclick=()=>{
 let sayAt=0,phaseSaid='',lastThump=0,tickT=null,lastTick=0;
 function drawLive(){
   const m=S.mission,s=m&&soldier(m.sid);if(!m||!s){S.mission=null;save();go('task');return}
-  $('l-task').textContent=m.task;const L=m.task.length;$('l-task').style.fontSize=(L<16?28:L<30?23:L<50?19:16)+'px';$('l-pic').innerHTML=img(s);
+  window.resetBuddy&&resetBuddy();$('l-task').textContent=m.task;const L=m.task.length;$('l-task').style.fontSize=(L<16?28:L<30?23:L<50?19:16)+'px';$('l-pic').innerHTML=img(s);
   $('l-who').textContent=dname(s);
   drawSteps();phaseSaid='';$('l-say').textContent='';wake();tick();
 }
