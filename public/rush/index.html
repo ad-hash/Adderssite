@@ -194,6 +194,21 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
 .flog .rec b .w{color:var(--acc-ink)}
 .lastw{font-style:italic;font-size:13px;line-height:1.45}
 .plaque q{font-size:11px;font-style:italic;line-height:1.35}
+/* squad cards: all three, with level and attributes */
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;flex-shrink:0}
+.scard{border:2px solid var(--ink);background:var(--tile);padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;min-width:0}
+.scard[aria-pressed="true"]{border:3px solid var(--acc);background:var(--win);padding:5px 3px}
+.scard .pic{width:58px;height:58px}
+.scard b{font-family:var(--pixel);font-size:11px;font-weight:400;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scard .lv{font-family:var(--pixel);font-size:10px;color:var(--acc-ink)}
+.scard small{font-size:10px;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scard .xp{width:100%;height:7px;display:block;margin-top:2px}
+.scard.out{opacity:.55}.scard.out img{filter:grayscale(1)!important}
+.scard.arm{border-color:var(--warn);background:var(--win)}
+.cards.one{grid-template-columns:minmax(0,1fr);width:50%;align-self:center}
+.cards.two{grid-template-columns:repeat(2,minmax(0,1fr));width:70%;align-self:center}
+.evo .say{position:relative;max-width:min(300px,80vw);border:2px solid #f2ede3;padding:6px 10px;font-size:14px;line-height:1.4;min-height:1.4em}
+.evo .say:empty{visibility:hidden}
 /* base and break room */
 .zz{position:absolute;right:16%;top:6%;font-family:var(--pixel);color:var(--muted);pointer-events:none}
 .zz i{position:absolute;font-style:normal;font-size:20px;opacity:0;animation:zz 3s linear infinite}
@@ -365,7 +380,7 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
 <body>
 <div class="app">
 <header class="topbar">
-  <a class="home" href="https://adders.party/" aria-label="Back to adders.party" title="adders.party"><span class="logo">AG</span></a><span class="tbt"><svg class="bolt" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2.5L5 13.5h6l-1.5 8 8.5-11h-6z"/></svg>Rush</span>
+  <a class="home" href="https://adders.party/" aria-label="Back to adders.party" title="adders.party"><span class="logo">AG</span></a><button class="tbt" id="homeb" aria-label="Rush home">Rush</button>
   <span class="sp"></span>
   <button class="ib" id="memb" aria-label="Memorial wall"><svg viewBox="0 0 24 24"><path d="M6 21V10a6 6 0 0 1 12 0v11z"/><path d="M3.5 21h17M12 10.5v6M9.5 13h5"/></svg></button>
   <button class="ib" id="el" aria-label="Change colour"><svg viewBox="0 0 24 24" id="elg"></svg></button>
@@ -414,12 +429,11 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
   <section class="screen" id="s-squad">
     <div class="crumbs"><span>1 ORDERS &gt;</span><span>2 CLOCK &gt;</span><b>3 SQUAD</b></div>
     <div class="summary"><b id="q-task"></b><span id="q-min"></span></div>
-    <div class="hero2"><button class="arr" id="b-prev" aria-label="Previous soldier">&lt;</button><div class="pic alive" id="b-pic"></div><button class="arr" id="b-next" aria-label="Next soldier">&gt;</button><div class="sq-bub" id="b-say"></div></div>
-    <button class="who" id="b-file" style="grid-template-columns:1fr" aria-label="Open service record">
-      <span class="mid"><b id="b-name"></b><small id="b-meta"></small><span class="xp" style="display:block"><i id="b-xp"></i></span><span class="more">SERVICE RECORD &gt;</span></span>
-    </button>
+    <div class="hero2"><div class="pic alive" id="b-pic"></div><div class="sq-bub" id="b-say"></div></div>
+    <div class="cards" id="b-cards"></div>
+    <button class="lab" id="b-file" style="color:var(--acc-ink);padding:2px 0">SERVICE RECORD &gt;</button>
     <p class="lab" id="b-risk" style="text-align:center;color:var(--acc-ink)"></p>
-    <div class="navrow"><button class="btn" data-go="time">BACK</button><button class="btn go" id="b-go">DEPLOY!</button></div>
+    <div class="navrow"><button class="btn" data-go="time">BACK</button><button class="btn go" id="b-go">RUSH!</button></div>
   </section>
 
   <!-- BASE: shown on every reopen, and as the break room -->
@@ -535,6 +549,11 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
         </div></section>
       <button class="btn go" id="en-enlist">ENLIST</button>
     </div>
+    <div class="encbox" id="en-full" hidden>
+      <p class="q" style="font-size:15px;text-align:center">Squad full. Who goes?</p>
+      <div class="cards" id="en-cards"></div>
+      <button class="btn" id="en-release">LET THE NEW ONE GO</button>
+    </div>
     <div class="encbox" id="en-lost" hidden><p class="q" id="en-was" style="text-align:center"></p><button class="btn go" data-go="task">BACK TO BASE</button></div>
   </section>
 
@@ -548,6 +567,8 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
         <div class="stat"><b id="st-streak">0</b><small>win streak</small></div></div></div></section>
     <section class="win"><div class="bar"><span class="close"></span><span class="wname">The fallen</span></div>
       <div class="pane" id="w-fallen"></div></section>
+    <section class="win" id="w-diswin"><div class="bar"><span class="close"></span><span class="wname">Honourably discharged</span></div>
+      <div class="pane" id="w-dis"></div></section>
     <section class="win" id="w-recwin"><div class="bar"><span class="close"></span><span class="wname">On the record</span></div>
       <div class="pane" id="w-rec"></div></section>
     <button class="btn small" id="w-reset">RESET EVERYTHING</button>
@@ -572,6 +593,7 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
   <div class="msg" id="e-msg"></div>
   <div class="stage"><div class="glow"></div><div class="fx" id="e-fx"></div><div class="pic" id="e-old"></div><div class="pic" id="e-new" hidden></div></div>
   <div class="perk" id="e-perk"></div>
+  <div class="say" id="e-say"></div>
   <button class="btn go" id="e-go">CONTINUE</button>
 </div>
 <div class="flash" id="flash"></div>
@@ -698,7 +720,7 @@ const img=(s,o={})=>{const src=o.fallen?`img/${s.sp}_fallen.webp`:`img/${s.sp}_$
 const soldier=id=>S.roster.find(s=>s.id===id);
 const isOut=s=>s.medUntil&&s.medUntil>Date.now();
 const cap=()=>UNLOCK.filter(w=>S.won>=w).length;
-const isReserve=s=>S.roster.indexOf(s)>=cap();
+const MAX=3,isReserve=()=>false;
 const hrs=ms=>Math.max(1,Math.ceil(ms/3600000));
 const fmtDate=t=>new Date(t).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
 const grace=s=>GRACE+(s.trait==='speedy'?5:0);
@@ -742,6 +764,7 @@ function go(name){
   if(name!=='camp'){stopNoise();clearInterval(radioT)}
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b)go(b.dataset.go)});
+$('homeb').onclick=()=>{blip();if(S.mission){go('live');return}if(['honest','letgo'].includes(cur))return;go(S.roster.length?'base':(S.camped?'drop':'camp'))};
 $('memb').onclick=()=>{if(S.mission&&cur==='live'){note('FINISH THE MISSION FIRST');return}if(['honest','letgo'].includes(cur))return;go(cur==='memorial'?'task':'memorial')};
 
 /* ---------- 1: the one thing ---------- */
@@ -777,26 +800,24 @@ function pickSel(){const c=soldier(S.sel);if(!c||(isOut(c)&&S.roster.some(s=>!is
 function drawTime(){if(!S.draft.task.trim()){go('task');return}setMins(S.mins);const s=pickSel();$('b-grace').textContent=`+${grace(s)} MIN GRACE`}
 $('ti-next').onclick=()=>{save();blip();go('squad')};
 
-/* ---------- 3: squad ---------- */
+/* ---------- 3: squad: all three side by side ---------- */
+function cardHTML(x,pressed,extra=''){const r=rankOf(x.xp);ensure(x);
+  return `<button class="scard${isOut(x)?' out':''}" data-id="${x.id}" aria-pressed="${pressed}" ${extra}><span class="pic">${img(x)}</span><b>${esc(x.name)}</b><span class="lv">LV${r} ${RANKS[r-1].toUpperCase()}</span><small>${SPECIES[x.sp]} · ${TRAITS[x.trait].n}</small><small>${cap1(x.pers)}${x.nick?' · "'+esc(x.nick)+'"':''}</small><span class="xp"><i style="width:${pct(x.xp)}%"></i></span>${isOut(x)?'<small>MED BAY</small>':''}</button>`}
 function drawSquad(){
   if(!S.draft.task.trim()){go('task');return}
-  const s=pickSel(),r=rankOf(s.xp),out=isOut(s),many=S.roster.length>1,res=isReserve(s);
+  const s=pickSel(),out=isOut(s),n=S.roster.length;
   $('q-task').textContent=S.draft.task;$('q-min').textContent=`${S.mins} min`;
   $('b-pic').innerHTML=img(s);$('b-pic').style.opacity=out?.45:1;
-  $('b-name').textContent=dname(s);
   $('b-say').textContent=S.away?tic(s,`You were gone ${S.away} days, ${s.call}.`):(Math.random()<.5&&S.draft.task?fill(s,pick(TASKLINES[s.pers]||TASKLINES.stoic),S.draft.task):(memory(s,S.draft.task)||line(s,'greet')));S.away=0;
-  $('b-meta').textContent=(res?'RESERVE · ':'')+(out?`MED BAY · back in ${hrs(s.medUntil-Date.now())}h`:`${RANKS[r-1]} · ${TRAITS[s.trait].n}`);
-  $('b-xp').style.width=pct(s.xp)+'%';
-  $('b-prev').style.visibility=$('b-next').style.visibility=many?'visible':'hidden';
-  $('b-risk').textContent=res?'RESERVES CAN\'T DEPLOY':out?'MED BAY':`FAIL AND ${s.name.toUpperCase()} DIES`;
-  $('b-go').textContent=res?'SWAP IN':out?'IN MED BAY':'DEPLOY!';$('b-go').disabled=out&&!res;
+  $('b-cards').className='cards'+(n===1?' one':n===2?' two':'');
+  $('b-cards').innerHTML=S.roster.map(x=>cardHTML(x,x.id===s.id)).join('');
+  $('b-risk').textContent=out?'MED BAY':`FAIL AND ${s.name.toUpperCase()} DIES`;
+  $('b-go').textContent=out?'IN MED BAY':'RUSH!';$('b-go').disabled=out;
 }
+$('b-cards').onclick=e=>{const c=e.target.closest('.scard');if(!c)return;const id=+c.dataset.id;if(id===S.sel){blip();go('file');return}S.sel=id;save();blip();drawSquad();act($('b-pic'),'a-hop')};
 $('b-file').onclick=()=>{blip();go('file')};
-function cycle(d){const i=S.roster.findIndex(s=>s.id===S.sel);S.sel=S.roster[(i+d+S.roster.length)%S.roster.length].id;save();blip();drawSquad()}
-$('b-prev').onclick=()=>cycle(-1);$('b-next').onclick=()=>cycle(1);
 $('b-go').onclick=()=>{
   const task=S.draft.task.trim(),s=soldier(S.sel);if(!task||!s)return;
-  if(isReserve(s)){S.roster=[s,...S.roster.filter(x=>x!==s)];save();blip();note(s.name.toUpperCase()+' SWAPPED IN');drawSquad();return}
   if(isOut(s))return;
   const now=Date.now(),end=now+S.mins*60000;
   S.mission={task,mins:S.mins,micro:S.draft.steps.map(t=>({t,done:false})),sid:s.id,start:now,end,graceEnd:end+grace(s)*60000,warned:false};
@@ -813,6 +834,10 @@ $('t-add').onclick=addStep;$('t-step').onkeydown=e=>{if(e.key==='Enter'){e.preve
 $('t-steps').onclick=e=>{const b=e.target.closest('.step');if(b){S.draft.steps.splice(+b.dataset.i,1);save();drawSteps0()}};
 
 /* ---------- base: enter the fray, or take a break ---------- */
+Object.assign(LINES.stoic,{evolve:["Stronger. Ready.","New rank. Same mission.","I feel it, {c}. Let's work.","Promotion accepted.","Harder to kill now."],bye:["It was an honour, {c}.","Dismissed. Good luck out there.","Carry on without me."]});
+Object.assign(LINES.hype,{evolve:["LOOK AT ME NOW!","I'M HUGE!","New me! Same hype!","Did you SEE that?!","Level up, baby!"],bye:["Best tour EVER! Bye!!","I'll miss you SO much!","Go smash stuff for me!"]});
+Object.assign(LINES.nervous,{evolve:["Is... is this me? I look scary.","I feel brave-ish!","Bigger. Still nervous.","Oh wow. Okay. Wow.","Don't make me fight bigger things."],bye:["Oh. Okay. Bye. Be safe.","I'll be fine. Probably.","Don't forget me, {c}."]});
+Object.assign(LINES.sarcastic,{evolve:["Great, now I have to live up to this.","Fancy. Does it come with a raise?","Don't get used to it.","Oh look, a costume change.","Took you long enough."],bye:["Fine. I'll find a better commander.","Don't cry. Okay, cry a bit.","Finally, some peace."]});
 Object.assign(LINES.stoic,{rest:["At ease.","Rest is part of the mission.","Recharging, {c}.","Stand down. Breathe.","Good soldiers rest too."]});
 Object.assign(LINES.hype,{rest:["Nap time! Then WAR!","Refuel and reload!","Break? Okay but I'm still hyped.","Snacks! Stretch! Then GO!"]});
 Object.assign(LINES.nervous,{rest:["Oh good, a break. I needed that.","Can we stay here a bit?","Quiet. Nice. Safe.","Breathing. Just breathing."]});
@@ -1000,7 +1025,7 @@ async function win(late){
   await wait(250);
   if(after>before){showXp(XP_AT[after-1]-1);$('r-xp').style.width='100%';await wait(1000);$('r-rank').textContent='LEVEL UP!';tone(1568,0,.3,.1);await wait(600);await evolve(s,before,after)}
   showXp(s.xp);
-  $('r-pic').innerHTML=img(s);if(after>before)party(3);
+  $('r-pic').innerHTML=img(s);if(after>before){party(3);$('r-task').textContent='“'+line(s,'evolve')+'”'}
   $('r-go').disabled=false;
   if(S.encounter){$('r-go').textContent='BACK TO BASE';$('r-go').dataset.next='enc'}
   else if(unlockedSlot&&S.roster.length<cap()){await wait(600);note(`${S.won} WINS: NEW SLOT UNLOCKED`);$('r-go').textContent='OPEN SUPPLY DROP';$('r-go').dataset.next='drop'}
@@ -1011,7 +1036,7 @@ $('r-go').onclick=()=>go($('r-go').dataset.next||'task');
 /* the evolution */
 function evolve(s,from,to){return new Promise(async done=>{
   const E=$('evo');E.className='evo on';
-  $('e-msg').textContent=`What? ${s.name.toUpperCase()} is evolving!`;$('e-perk').textContent='';
+  $('e-msg').textContent=`What? ${s.name.toUpperCase()} is evolving!`;$('e-perk').textContent='';$('e-say').textContent='';
   $('e-old').innerHTML=img(s,{rank:from});$('e-new').innerHTML=img(s,{rank:to});
   $('e-old').hidden=false;$('e-new').hidden=true;
   await wait(1300);
@@ -1025,6 +1050,7 @@ function evolve(s,from,to){return new Promise(async done=>{
   $('e-new').firstChild.classList.remove('whiteout');E.classList.remove('charging');E.classList.add('lit');party(5);
   burst($('e-fx'),60,260);setTimeout(()=>burst($('e-fx'),40,200),350);
   $('e-msg').textContent=`${s.name.toUpperCase()} became a ${RANKS[to-1].toUpperCase()}!`;tone(1568,.4,.3,.08);
+  setTimeout(()=>{$('e-say').textContent='“'+line(s,'evolve')+'”';tone(700,0,.06,.06);tone(900,.07,.06,.06)},900);
   $('e-perk').textContent=s._newNick?`Earned a nickname: "${s.nick}"`:PERKS[to-1];if(s._newNick){delete s._newNick;save()}
   $('e-go').onclick=()=>{E.className='evo';done()};
 })}
@@ -1080,6 +1106,7 @@ function drawMemorial(){
   $('st-won').textContent=S.won;$('st-fallen').textContent=S.fallen.length;$('st-streak').textContent=S.streak;
   $('w-fallen').innerHTML=S.fallen.length?`<div class="plaques">${S.fallen.map(f=>`<div class="plaque"><div class="pic">${img(f,{fallen:true,alt:f.name+', fallen'})}</div>
     <b>${esc(f.nick?f.name+' "'+f.nick+'"':f.name)}</b><small>${RANKS[f.rank-1]} · ${f.missions} mission${f.missions===1?'':'s'}</small><span>Fell to: <strong>${esc(f.task)}</strong></span>${f.last?`<q>${esc(f.last)}</q>`:''}<small>${fmtDate(f.date)}</small></div>`).join('')}</div>`:'<p class="sub">No one has fallen. Yet.</p>';
+  const D=S.discharged||[];$('w-diswin').hidden=!D.length;$('w-dis').innerHTML=D.map(d=>`<div class="rec"><b>${esc(d.nick?d.name+' "'+d.nick+'"':d.name).toUpperCase()} · ${RANKS[d.rank-1].toUpperCase()} · ${fmtDate(d.date).toUpperCase()}</b><span>${SPECIES[d.sp]} · ${d.missions} missions. Alive and well.</span></div>`).join('');
   $('w-recwin').hidden=!S.record.length;
   $('w-rec').innerHTML=S.record.map(r=>`<div class="rec"><b>${esc(r.name.toUpperCase())} · ${fmtDate(r.date)} · ${r.from.toUpperCase()} &gt; ${r.to.toUpperCase()}</b><span>Mission: ${esc(r.task)}</span><span>&quot;${esc(r.why)}&quot;</span></div>`).join('');
 }
@@ -1094,7 +1121,7 @@ let meterRAF=0,mx=0,mdir=1,mlast=0,zone=[0,0];
 function drawEnc(){const e=S.encounter;if(!e){go('task');return}
   $('en-h').textContent='Contact!';$('en-bang').hidden=false;$('en-bang').style.animation='none';void $('en-bang').offsetWidth;$('en-bang').style.animation='';
   $('en-pic').className='enc-pic';$('en-pic').innerHTML=img(e,{rank:1,cls:'sil',alt:'Something in the bushes'});
-  $('en-play').hidden=false;$('en-won').hidden=true;$('en-lost').hidden=true;
+  $('en-play').hidden=false;$('en-won').hidden=true;$('en-lost').hidden=true;$('en-full').hidden=true;
   if(e.caught){caught(false);return}
   const w=18+Math.random()*8,z0=8+Math.random()*(84-w);zone=[z0,z0+w];$('en-zone').style.left=z0+'%';$('en-zone').style.width=w+'%';
   mx=0;mdir=1;mlast=performance.now();cancelAnimationFrame(meterRAF);meterRAF=requestAnimationFrame(meter);
@@ -1102,13 +1129,22 @@ function drawEnc(){const e=S.encounter;if(!e){go('task');return}
 function meter(t){const dt=(t-mlast)/1000;mlast=t;mx+=mdir*dt*95;if(mx>=100){mx=100;mdir=-1}if(mx<=0){mx=0;mdir=1}$('en-mark').style.left=mx+'%';meterRAF=requestAnimationFrame(meter)}
 $('en-catch').onclick=()=>{if(!S.encounter||S.encounter.caught)return;cancelAnimationFrame(meterRAF);audio();
   if(mx>=zone[0]&&mx<=zone[1]){S.encounter.caught=true;save();caught(true)}else flee()};
+let relArmed=null;
+function drawFull(){relArmed=null;$('en-cards').innerHTML=S.roster.map(x=>cardHTML(x,false)).join('')}
+$('en-cards').onclick=e=>{const c=e.target.closest('.scard');if(!c)return;const x=soldier(+c.dataset.id);
+  if(relArmed!==x.id){relArmed=x.id;[...$('en-cards').children].forEach(k=>k.classList.toggle('arm',k===c));note('TAP AGAIN TO LET '+x.name.toUpperCase()+' GO');return}
+  ensure(x);note(`${x.name.toUpperCase()}: "${line(x,'bye')}"`);tone(523,0,.2,.08,'triangle');tone(392,.2,.3,.08,'triangle');
+  S.discharged=S.discharged||[];S.discharged.unshift({name:x.name,nick:x.nick,sp:x.sp,rank:rankOf(x.xp),missions:x.missions,date:Date.now()});
+  S.roster=S.roster.filter(k=>k.id!==x.id);if(S.sel===x.id)S.sel=null;save();
+  $('en-full').hidden=true;$('en-won').hidden=false;setTimeout(()=>$('en-name').focus(),50)};
+$('en-release').onclick=()=>{flee()};
 $('en-skip').onclick=()=>{cancelAnimationFrame(meterRAF);flee()};
 function caught(fx){const e=S.encounter;$('en-bang').hidden=true;$('en-h').textContent='Caught!';
   $('en-pic').className='enc-pic caught alive';$('en-pic').innerHTML=img(e,{rank:1});
-  $('en-play').hidden=true;$('en-won').hidden=false;
+  $('en-play').hidden=true;$('en-won').hidden=S.roster.length>=MAX;$('en-full').hidden=S.roster.length<MAX;if(S.roster.length>=MAX)drawFull();
   $('en-attrs').innerHTML=[['Species',SPECIES[e.sp]],['Quirk',`${TRAITS[e.trait].n}: ${TRAITS[e.trait].d}`]].map(([a,b])=>`<div><span>${a}</span><span>${esc(b)}</span></div>`).join('');
   if(fx){flash();burst($('en-fx'),40,180);bigChord();buzz([80,40,120]);party(3)}}
-function flee(){const e=S.encounter;if(!e)return;$('en-bang').hidden=true;
+function flee(){const e=S.encounter;if(!e)return;$('en-full').hidden=true;$('en-bang').hidden=true;
   $('en-pic').innerHTML=img(e,{rank:1});$('en-pic').className='enc-pic flee';
   tone(600,0,.5,.12,'sawtooth',150);
   $('en-h').textContent='It got away';$('en-play').hidden=true;$('en-lost').hidden=false;
@@ -1117,7 +1153,7 @@ function flee(){const e=S.encounter;if(!e)return;$('en-bang').hidden=true;
 $('en-name').addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();$('en-enlist').click()}});
 $('en-enlist').onclick=()=>{const e=S.encounter,name=$('en-name').value.trim();if(!e)return;if(!name){note('THEY NEED A NAME');$('en-name').focus();return}
   S.roster.push({id:S.nextId++,name,sp:e.sp,coat:e.coat,hue:e.hue,trait:e.trait,xp:0,missions:0,scars:0,toughUsed:false,medUntil:0,born:Date.now()});
-  const res=S.roster.length>cap();S.encounter=null;save();$('en-name').value='';jingle();note(res?name.toUpperCase()+' JOINED THE RESERVES':name.toUpperCase()+' ENLISTED');go('task')};
+  S.sel=S.roster[S.roster.length-1].id;S.encounter=null;save();$('en-name').value='';jingle();note(name.toUpperCase()+' ENLISTED');go('base')};
 
 /* ---------- dev mode: pick any sprite and rank, preview evolutions ---------- */
 function devSoldier(){let s=soldier(S.sel)||S.roster[0];if(!s){s={id:S.nextId++,name:'Test',sp:'kitsune',coat:'Classic',hue:0,trait:'eager',xp:0,missions:0,scars:0,toughUsed:false,medUntil:0,born:Date.now()};S.roster.push(s);S.camped=true;S.drop=null}S.sel=s.id;return s}
