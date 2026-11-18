@@ -926,8 +926,8 @@ function newSignal(mode){const o=newSignal0(mode);o.sp=o.sp||pick(Object.keys(SP
   return o}
 function newSignal0(mode){const taken=S.roster.map(x=>x.sp),pool=Object.keys(SPECIES).filter(k=>!taken.includes(k)),c=pick(COATS);
   return{mode:mode||'first',full:fullName(),sp:null,coat:null,hue:0,trait:pick(Object.keys(TRAITS)),pers:pick(PERS),tic:pick(TICS),call:pick(CALLS),catch:makeCatch(),f:.15+Math.random()*.7}}
-const FIRST=['Dana','Marcus','Priya','Tomasz','Aiko','Kofi','Elena','Ravi','Siobhan','Mateo','Yusuf','Ingrid','Chidi','Mei','Bastien','Amara','Viktor','Lena','Hamza','Rosa','Desmond','Freya','Omar','Noor','Felix','Zara','Idris','Hana','Callum','Leila','Arjun','Greta','Kwame','Sana','Rafael','Maeve','Tariq','Juno','Emeka','Astrid'];
-const LAST=['Okafor','Novak','Reyes','Lindqvist','Tanaka','Mensah','Kowalski','Haddad','Byrne','Moreau','Petrov','Chaudhry','Silva','Nakamura','Adeyemi','Fitzgerald','Kim','Rossi','Abara','Lund','Duarte','Hale','Sato','Osei','Volkov','Brennan','Iqbal','Castillo','Wren','Achebe','Holm','Varga','Quinn','Ndiaye','Moss','Ferreira','Kaur','Strand','Bello','Marsh'];
+const FIRST=['Gary','Brenda','Kevin','Doug','Sharon','Nigel','Barry','Trevor','Clive','Sandra','Derek','Bev','Keith','Norman','Pam','Colin','Wendy','Terry','Margaret','Reginald','Mildred','Bartholomew','Chad','Brock','Biff','Duke','Gloria','Fergus','Dolores','Dave','Linda','Graham','Brian','Janet','Malcolm','Shirley','Roger','Debbie','Geoff','Maureen'];
+const LAST=['Patel','Sanchez','Smith','Jones','Nguyen','Kowalski','Murphy','Schmidt','Müller','Rossi','Khan','Singh','Wong','Garcia','Lopez','Kim','Park','Tanaka','Okafor','Johnson','Brown','Wilson','Taylor','Hughes','Evans','Davies','Ali','Hussain','Cohen','Novak','Andersson','Hansen','Dubois','Martin','Fernandes','Silva','Ivanov','Yilmaz','Mensah','Kaur'];
 const fullName=()=>pick(FIRST)+' '+pick(LAST);
 const recruiting=()=>!!(S.signal&&S.signal.mode==='recruit');
 function startRecruit(){S.signal=newSignal('recruit');save();go('camp')}
