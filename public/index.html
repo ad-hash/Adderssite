@@ -497,6 +497,16 @@
       </a>
       <p class="cap">(breathe. close the ring.)</p>
     </div>
+    <div class="item">
+      <a class="winlink" href="/rush/">
+        <div class="win w-rush">
+          <div class="bar"><span class="close"></span><span class="wname">rush.exe</span><span class="ext">&#8599;</span></div>
+          <div class="pane"><canvas id="cv-rush" width="96" height="96" role="img" aria-label="Pixel squad soldier"></canvas></div>
+        </div>
+        <div class="label">Rush</div>
+      </a>
+      <p class="cap">(one task. don't let them die.)</p>
+    </div>
   </div>
 
   <!-- PUBLICATIONS -->
@@ -734,6 +744,14 @@
     }
   }
 
+  // rush: one of the squad, dithered like the rest
+  var rushImg = null;
+  function drawRush(o, w, h){
+    if (!rushImg) return;
+    var r = Math.min(w/rushImg.width, h/rushImg.height)*1.08, dw = rushImg.width*r, dh = rushImg.height*r;
+    o.drawImage(rushImg, (w-dw)/2, (h-dh)/2 + h*.02, dw, dh);
+  }
+
   /* ---------- me.exe: face and disco ball take turns, with a pixel dissolve ---------- */
   var me = document.getElementById('cv-me'), photo = null;
   var meCtx = me.getContext('2d'), MW = me.width, MH = me.height;
@@ -782,11 +800,13 @@
     dither1(document.getElementById('cv-gym'), drawKettlebell, ink);
     dither1(document.getElementById('cv-pubs'), drawPapers, ink);
     dither1(document.getElementById('cv-sit'), drawEnso, ink);
+    dither1(document.getElementById('cv-rush'), drawRush, ink, function(v){ v = (v - 120) * 1.35 + 140; return v < 0 ? 0 : v > 255 ? 255 : v; });
     buildMe();
   }
   var img = new Image();
   img.onload = function(){ photo = img; showing = 'face'; render(); me.setAttribute('aria-label', 'Pixel portrait of Adnaan'); };
   img.src = 'me.jpg';
+  var ri = new Image(); ri.onload = function(){ rushImg = ri; render(); }; ri.src = 'rush/img/gorilla_4.webp';
   setInterval(function(){ if (!document.hidden) swapMe(); }, 3000);
 
   /* ---------- backgrounds: paper grain by default; visitors can pick another or roll a random one ---------- */
