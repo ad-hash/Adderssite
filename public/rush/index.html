@@ -224,6 +224,7 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
 .buddy .pic.held{cursor:grabbing}
 .buddy .pic.held img{animation:dangle .35s ease-in-out infinite!important}
 @keyframes dangle{0%,100%{transform:rotate(-9deg) scale(1.08)}50%{transform:rotate(9deg) scale(1.08)}}
+.pic.fleeing img{animation:flee 1s ease-in forwards!important}
 /* first contact radio */
 .static{position:absolute;left:21%;top:21%;width:58%;height:58%;border-radius:50%;image-rendering:pixelated;pointer-events:none}
 .sigbars{display:flex;justify-content:center;align-items:flex-end;gap:5px;height:26px;flex-shrink:0}
@@ -468,8 +469,9 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
     <p class="radio" id="c-msg" aria-live="polite"></p>
     <div class="talk" id="c-talk" hidden>
       <div class="speech" id="c-say"></div>
-      <div id="c-namebox" hidden><input class="field-in" id="c-name" maxlength="18" autocomplete="off" enterkeyhint="done" placeholder="What do I go by?" aria-label="Name your soldier"></div>
-      <button class="btn go" id="c-next">NEXT</button>
+      <div id="c-full" hidden><div class="cards" id="c-cards"></div></div>
+      <div id="c-namebox" hidden><input class="field-in" id="c-name" maxlength="18" autocomplete="off" enterkeyhint="done" placeholder="Give them a nickname" aria-label="Give your soldier a nickname"></div>
+      <div class="navrow" id="c-nav"><button class="btn" id="c-skip" hidden>MORE TASKS</button><button class="btn go" id="c-next">NEXT</button></div>
     </div>
   </section>
 
@@ -607,6 +609,7 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
 <div class="flash" id="flash"></div>
 <div class="count" id="count" aria-live="assertive"></div>
 
+<script src="lame.min.js" defer></script>
 <script>
 /* no accidental zooming (same as Sit) */
 ['gesturestart','gesturechange'].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
@@ -716,7 +719,7 @@ function nickFor(s){const L=s.log||[];if(!L.length)return pick(['Ghost','Boots',
   const late=L.filter(e=>e.r==='late').length,avgM=L.reduce((a,e)=>a+(e.m||25),0)/L.length,avgSt=L.reduce((a,e)=>a+(e.st||0),0)/L.length,early=L.filter(e=>e.r==='win'&&e.left>0.3).length;
   if(late)return 'Photo Finish';if(avgM<=10)return 'Quickdraw';if(avgM>=45)return 'Marathon';if(avgSt>=3)return 'Checklist';if(early>=L.length*.6)return 'Early Bird';
   return {speedy:'Zoom',tough:'Iron',glutton:'Snacks',eager:'Keen'}[s.trait]||pick(['Ghost','Boots','Sparky','Ace','Tank'])}
-const dname=s=>s.nick?`${s.name} "${s.nick}"`:s.name;
+const dname=s=>{if(s.full){const [f,...l]=s.full.split(' ');return `${f} "${s.name}" ${l.join(' ')}`}return s.nick?`${s.name} "${s.nick}"`:s.name};
 function ensure(s){if(!s.pers)s.pers=pick(PERS);if(!s.tic)s.tic=pick(TICS);if(!s.call)s.call=pick(CALLS);if(!s.catch)s.catch=makeCatch();if(!s.log)s.log=[];if(s.nick===undefined)s.nick=null;if(!s.born)s.born=Date.now()}
 
 
@@ -773,23 +776,23 @@ function go(name){
   if(name!=='camp'){stopNoise();clearInterval(radioT)}
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b)go(b.dataset.go)});
-$('homeb').onclick=()=>{blip();if(S.mission){go('live');return}if(['honest','letgo'].includes(cur))return;go(S.roster.length?'base':(S.camped?'drop':'camp'))};
+$('homeb').onclick=()=>{blip();if(S.mission){go('live');return}if(['honest','letgo'].includes(cur))return;go(S.roster.length?'base':'camp')};
 $('memb').onclick=()=>{if(S.mission&&cur==='live'){note('FINISH THE MISSION FIRST');return}if(['honest','letgo'].includes(cur))return;go(cur==='memorial'?'task':'memorial')};
 
 /* ---------- 1: the one thing ---------- */
 if(!S.draft)S.draft={task:'',steps:[]};
 function drawTask(){
-  if(!S.roster.length){go(S.camped?'drop':'camp');return}
+  if(!S.roster.length){go('camp');return}
   $('m-task').value=S.draft.task;
   drawSteps0();
   const c=cap(),nxt=UNLOCK.find(w=>w>S.won);
   $('b-foot').textContent=`${S.won} WINS`;
-  $('b-slot').hidden=S.roster.length>=c;$('b-slot').textContent='SLOT OPEN: RECRUIT';
+  $('b-slot').hidden=S.roster.length>=c||S.roster.length>=MAX;$('b-slot').textContent='SLOT OPEN: RECRUIT';
 }
 $('m-task').oninput=e=>{S.draft.task=e.target.value;save()};
 $('m-task').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('t-next').click()}});
 $('t-next').onclick=()=>{S.draft.task=$('m-task').value.trim();save();if(!S.draft.task){note('NO ORDERS, NO MISSION');$('m-task').focus();return}$('m-task').blur();blip();go('time')};
-$('b-slot').onclick=()=>go('drop');
+$('b-slot').onclick=()=>startRecruit();
 
 /* ---------- 2: time (drag round like Sit) ---------- */
 const R=112,CIRC=TAU*R,QUICK=[10,15,25,45,60];
@@ -830,7 +833,7 @@ $('b-go').onclick=()=>{
   if(isOut(s))return;
   const now=Date.now(),end=now+S.mins*60000;
   S.mission={task,mins:S.mins,micro:S.draft.steps.map(t=>({t,done:false})),sid:s.id,start:now,end,graceEnd:end+grace(s)*60000,warned:false};
-  S.draft={task:'',steps:[]};save();audio();countdown().then(()=>go('live'));
+  S.draft={task:'',steps:[]};save();audio();startTrack(S.mission);countdown().then(()=>go('live'));
 };
 async function countdown(){const c=$('count');c.classList.add('on');
   for(const n of ['3','2','1']){c.innerHTML=`<b>${n}</b>`;tone(440,0,.15,.14);buzz(30);await wait(650)}
@@ -866,7 +869,7 @@ Object.assign(LINES.hype,{rest:["Nap time! Then WAR!","Refuel and reload!","Brea
 Object.assign(LINES.nervous,{rest:["Oh good, a break. I needed that.","Can we stay here a bit?","Quiet. Nice. Safe.","Breathing. Just breathing."]});
 Object.assign(LINES.sarcastic,{rest:["Finally. Mandatory break.","Wake me when it matters.","Ah, the best part of the job.","Don't rush back on my account."]});
 let baseT=null;
-function drawBase(){const s=S.roster.length?pickSel():null;if(!s){go(S.camped?'drop':'camp');return}
+function drawBase(){const s=S.roster.length?pickSel():null;if(!s){go('camp');return}
   const brk=!!S.breakSince;$('s-base').classList.toggle('resting',brk);$('g2-pic').innerHTML=img(s);$('g2-pic').className='pic '+(brk?'sleep':'alive');
   $('g2-h').textContent=brk?'On break':'Base';$('g2-sub').textContent=brk?'AT EASE':dname(s).toUpperCase();
   $('g2-zz').hidden=!brk;$('g2-time').hidden=!brk;
@@ -883,23 +886,42 @@ const INTRO={
  hype:["YOU FOUND ME!! {c}!!","Okay okay: you pick ONE task, set the clock, and I charge in with you!","Beat the clock and I level up! Let it win and... I'm gone. Forever. So don't!","Let's get as many tasks smashed as possible together!!"],
  nervous:["Oh! Oh thank goodness. You found me, {c}.","So... you pick one task. Just one. Set the clock. I'll come with you.","If we beat the clock I get stronger. If we don't... I don't make it. Please let me make it.","Let's get as many tasks smashed as possible together. Gently."],
  sarcastic:["Finally. Took you long enough, {c}.","Rules: one task, one clock, I tag along. Riveting.","Beat the clock and I get promoted. Lose, and I'm toast. No pressure.","Let's get as many tasks smashed as possible together. Apparently."]};
-const CALLOUT="...anyone out there? ...{c}? Can you hear me?";
-let tune=0,locked=false,lockSince=0,talkI=0,noiseSrc=null,noiseGain=null,radioT=null,staticT=null;
-function newSignal(){const c=pick(COATS),sp=pick(Object.keys(SPECIES));return{sp,coat:c[0],hue:c[1],trait:pick(Object.keys(TRAITS)),pers:pick(PERS),tic:pick(TICS),call:pick(CALLS),catch:makeCatch(),f:.15+Math.random()*.7}}
+const RECRUIT={stoic:["Signal locked. Reporting for duty, {c}.","Heard you get things done. Count me in."],
+ hype:["YOU FOUND ME!! Can I join?? I'm joining!","Let's get as many tasks smashed as possible together!"],
+ nervous:["Oh! Hi. You found me. Is there... room for me?","I'll try really hard. Promise."],
+ sarcastic:["Oh. You. Fine, I'll join.","Try not to get me killed, {c}."]};
+const CALLOUT="...anyone out there? ...{c}? Can you hear me?",WINDOW=25000;
+let tune=0,locked=false,lockSince=0,talkI=0,noiseSrc=null,noiseGain=null,radioT=null,staticT=null,askMode=false,relArm=null;
+function newSignal(mode){const taken=S.roster.map(x=>x.sp),pool=Object.keys(SPECIES).filter(k=>!taken.includes(k)),c=pick(COATS);
+  return{mode:mode||'first',full:fullName(),sp:pick(pool.length?pool:Object.keys(SPECIES)),coat:c[0],hue:c[1],trait:pick(Object.keys(TRAITS)),pers:pick(PERS),tic:pick(TICS),call:pick(CALLS),catch:makeCatch(),f:.15+Math.random()*.7}}
+const FIRST=['Dana','Marcus','Priya','Tomasz','Aiko','Kofi','Elena','Ravi','Siobhan','Mateo','Yusuf','Ingrid','Chidi','Mei','Bastien','Amara','Viktor','Lena','Hamza','Rosa','Desmond','Freya','Omar','Noor','Felix','Zara','Idris','Hana','Callum','Leila','Arjun','Greta','Kwame','Sana','Rafael','Maeve','Tariq','Juno','Emeka','Astrid'];
+const LAST=['Okafor','Novak','Reyes','Lindqvist','Tanaka','Mensah','Kowalski','Haddad','Byrne','Moreau','Petrov','Chaudhry','Silva','Nakamura','Adeyemi','Fitzgerald','Kim','Rossi','Abara','Lund','Duarte','Hale','Sato','Osei','Volkov','Brennan','Iqbal','Castillo','Wren','Achebe','Holm','Varga','Quinn','Ndiaye','Moss','Ferreira','Kaur','Strand','Bello','Marsh'];
+const fullName=()=>pick(FIRST)+' '+pick(LAST);
+const recruiting=()=>!!(S.signal&&S.signal.mode==='recruit');
+function startRecruit(){S.signal=newSignal('recruit');save();go('camp')}
 $('c-ticks').innerHTML=[...Array(24)].map((_,i)=>{const a=i/24*TAU,r1=i%2?101:95;return`<line class="tick" x1="${150+Math.sin(a)*r1}" y1="${150-Math.cos(a)*r1}" x2="${150+Math.sin(a)*104}" y2="${150-Math.cos(a)*104}"/>`}).join('');
 const strength=()=>{const d=Math.abs(tune-S.signal.f),cd=Math.min(d,1-d);return Math.max(0,1-cd/.16)};
-function drawCamp(){if(S.roster.length){go('task');return}
-  if(!S.signal){S.signal=newSignal();save()}
-  locked=false;lockSince=0;talkI=0;$('c-talk').hidden=true;$('c-namebox').hidden=true;$('c-bars').hidden=false;$('c-msg').hidden=false;$('c-dial').classList.add('drag');
-  $('c-h').textContent='Incoming signal';$('c-pic').className='pic';$('c-pic').innerHTML=img(S.signal,{rank:1,alt:'A figure in the static'});
-  tune=0;radioUpdate();clearInterval(radioT);radioT=setInterval(garble,140);staticLoop()}
-function radioUpdate(){const st=strength();arc($('c-arc'),$('c-knob'),tune);
-  $('c-freq').textContent='FM '+(87.5+tune*20.5).toFixed(1);
+function navBtns(skip,next){$('c-skip').hidden=!skip;if(skip)$('c-skip').textContent=skip;$('c-next').textContent=next;$('c-nav').style.gridTemplateColumns=skip?'':'1fr'}
+function drawCamp(){
+  if(!S.signal){if(S.roster.length){go('task');return}S.signal=newSignal('first');save()}
+  const sg=S.signal;locked=false;lockSince=0;talkI=0;askMode=false;
+  $('c-talk').hidden=true;$('c-namebox').hidden=true;$('c-full').hidden=true;$('c-bars').hidden=false;$('c-msg').hidden=false;$('c-dial').classList.add('drag');
+  $('c-h').textContent=recruiting()?'Faint signal':'Incoming signal';$('c-pic').className='pic';$('c-pic').innerHTML=img(sg,{rank:1,alt:'A figure in the static'});
+  tune=0;radioUpdate();staticLoop();clearInterval(radioT);
+  if(recruiting()&&sg.lost){showLost();return}
+  if(recruiting()&&!sg.asked){askMode=true;$('c-bars').hidden=true;$('c-msg').hidden=true;$('c-talk').hidden=false;
+    $('c-say').textContent="Faint signal on the radio. Someone's out there.";navBtns('MORE TASKS','TUNE IN');return}
+  radioT=setInterval(garble,140)}
+function radioUpdate(){const st=strength(),sg=S.signal;arc($('c-arc'),$('c-knob'),tune);
+  const left=recruiting()&&sg.until&&!locked?Math.max(0,Math.ceil((sg.until-Date.now())/1000)):null;
+  $('c-freq').textContent='FM '+(87.5+tune*20.5).toFixed(1)+(left!==null?` · ${left}s`:'');
   [...$('c-bars').children].forEach((b,i)=>b.classList.toggle('on',st>i/5+.05));
-  const im=$('c-pic').querySelector('img');if(im&&!locked){im.style.opacity=(st*st).toFixed(2);im.style.filter=`brightness(${st>.8?(st-.8)*5:0}) blur(${((1-st)*6).toFixed(1)}px)`+(S.signal.hue?` hue-rotate(${S.signal.hue}deg)`:'')}
+  const im=$('c-pic').querySelector('img');if(im&&!locked){im.style.opacity=(st*st).toFixed(2);im.style.filter=`brightness(${st>.8?(st-.8)*5:0}) blur(${((1-st)*6).toFixed(1)}px)`+(sg.hue?` hue-rotate(${sg.hue}deg)`:'')}
   if(noiseGain)noiseGain.gain.value=soundOn&&!locked?.04+(1-st)*.12:0;
-  if(!locked){if(st>.93){if(!lockSince)lockSince=Date.now();else if(Date.now()-lockSince>700)lockOn()}else lockSince=0}}
-function garble(){if(locked||cur!=='camp')return;const st=strength(),t=fill(S.signal,CALLOUT);
+  if(locked||askMode)return;
+  if(left===0){loseSignal();return}
+  if(st>.93){if(!lockSince)lockSince=Date.now();else if(Date.now()-lockSince>700)lockOn()}else lockSince=0}
+function garble(){if(locked||askMode||cur!=='camp')return;const st=strength(),t=fill(S.signal,CALLOUT);
   $('c-msg').textContent=!tuning&&tune===0?'TURN THE DIAL':st<.08?'~ static ~':[...t].map(ch=>ch===' '||Math.random()<st*st*1.15?ch:pick('░▒#%/~')).join('');
   if(st>.35&&Math.random()<st*.5)tone(300+Math.random()*500*st,0,.05,.03*st,'square')}
 function staticLoop(){cancelAnimationFrame(staticT);const cv=$('c-static'),cx=cv.getContext('2d'),W=cv.width,H=cv.height,id=cx.createImageData(W,H);
@@ -913,24 +935,76 @@ function stopNoise(){try{noiseSrc&&noiseSrc.stop()}catch{}noiseSrc=null;noiseGai
 let tuning=false,lastBuzz=0;
 function tuneAt(e){const r=$('c-dial').getBoundingClientRect(),x=e.clientX-r.left-r.width/2,y=e.clientY-r.top-r.height/2;tune=((Math.atan2(x,-y)+TAU)%TAU)/TAU;
   const st=strength(),lvl=Math.floor(st*5);if(lvl!==lastBuzz){lastBuzz=lvl;buzz(lvl*4+2);if(st>.2)tone(400+lvl*120,0,.04,.05)}radioUpdate()}
-$('c-dial').addEventListener('pointerdown',e=>{if(cur!=='camp'||locked)return;audio();startNoise();tuning=true;try{$('c-dial').setPointerCapture(e.pointerId)}catch{}tuneAt(e)});
+$('c-dial').addEventListener('pointerdown',e=>{if(cur!=='camp'||locked||askMode)return;audio();startNoise();tuning=true;try{$('c-dial').setPointerCapture(e.pointerId)}catch{}tuneAt(e)});
 $('c-dial').addEventListener('pointermove',e=>{if(tuning&&!locked)tuneAt(e)});
 ['pointerup','pointercancel'].forEach(ev=>$('c-dial').addEventListener(ev,()=>{tuning=false}));
 setInterval(()=>{if(cur==='camp'&&!locked&&S.signal)radioUpdate()},120);
+function loseSignal(){locked=true;clearInterval(radioT);stopNoise();S.signal.lost=true;save();showLost()}
+function showLost(){const sg=S.signal;$('c-dial').classList.remove('drag');$('c-h').textContent='Signal lost';
+  $('c-pic').innerHTML=img(sg,{rank:1});$('c-pic').className='pic fleeing';tone(600,0,.5,.12,'sawtooth',150);
+  $('c-bars').hidden=true;$('c-msg').hidden=true;$('c-talk').hidden=false;$('c-full').hidden=true;$('c-namebox').hidden=true;
+  $('c-say').textContent=`It got away. It was a ${SPECIES[sg.sp]}.`;navBtns(null,'BACK TO BASE')}
 function lockOn(){locked=true;clearInterval(radioT);stopNoise();$('c-dial').classList.remove('drag');
-  const sg=S.signal;$('c-pic').innerHTML=img(sg,{rank:1});$('c-pic').className='pic alive';
+  const sg=S.signal;sg.locked=true;save();$('c-pic').innerHTML=img(sg,{rank:1});$('c-pic').className='pic alive';
   flash();burst($('c-fx'),40,170);bigChord();buzz([60,40,120]);shake();
   $('c-h').textContent='Signal locked';$('c-bars').hidden=true;$('c-msg').hidden=true;$('c-talk').hidden=false;talkI=0;speak()}
-function speak(){const sg=S.signal,L=INTRO[sg.pers]||INTRO.stoic;
-  if(talkI<L.length){$('c-say').textContent=fill(sg,L[talkI]);tone(500+talkI*80,0,.05,.06);tone(700+talkI*80,.06,.05,.05);act($('c-pic'),pick(ACTS));
-    $('c-next').textContent=talkI===L.length-1?'LET\'S GO':'NEXT';$('c-namebox').hidden=true}
-  else{$('c-say').textContent=fill(sg,'One more thing, {c}. What do I go by?');$('c-namebox').hidden=false;$('c-next').textContent='ENLIST';setTimeout(()=>$('c-name').focus(),60)}}
-$('c-next').onclick=()=>{const sg=S.signal,L=INTRO[sg.pers]||INTRO.stoic;
-  if(talkI<L.length){talkI++;speak();return}
-  const name=$('c-name').value.trim();if(!name){note('NAME ME, COMMANDER');$('c-name').focus();return}
-  const id=S.nextId++;S.roster.push({id,name,sp:sg.sp,coat:sg.coat,hue:sg.hue,trait:sg.trait,pers:sg.pers,tic:sg.tic,call:sg.call,catch:sg.catch,xp:0,missions:0,scars:0,toughUsed:false,medUntil:0,born:Date.now(),log:[],nick:null});
-  S.sel=id;S.signal=null;S.camped=true;save();$('c-name').value='';jingle();party(3);note(name.toUpperCase()+' ENLISTED');go('task')};
+const introLines=()=>(recruiting()?RECRUIT:INTRO)[S.signal.pers]||(recruiting()?RECRUIT:INTRO).stoic;
+function speak(){const sg=S.signal,L=introLines();$('c-full').hidden=true;$('c-namebox').hidden=true;
+  if(talkI<L.length){$('c-say').textContent=fill(sg,L[talkI])+(talkI===0&&sg.full?` Name's ${sg.full}.`:'');tone(500+talkI*80,0,.05,.06);tone(700+talkI*80,.06,.05,.05);act($('c-pic'),pick(ACTS));
+    navBtns(null,talkI===L.length-1?'LET\'S GO':'NEXT')}
+  else if(recruiting()&&S.roster.length>=MAX){relArm=null;$('c-say').textContent=fill(sg,"Squad's full, {c}. Who do I replace?");
+    $('c-full').hidden=false;$('c-cards').innerHTML=S.roster.map(x=>cardHTML(x,false)).join('');navBtns(null,'LET THE NEW ONE GO')}
+  else{$('c-say').textContent=fill(sg,sg.full?'One more thing, {c}. Everyone gets a nickname. What\'s mine?':'One more thing, {c}. What do I go by?');$('c-namebox').hidden=false;navBtns(null,'ENLIST');setTimeout(()=>$('c-name').focus(),60)}}
+$('c-cards').onclick=e=>{const c=e.target.closest('.scard');if(!c)return;const x=soldier(+c.dataset.id);
+  if(relArm!==x.id){relArm=x.id;[...$('c-cards').children].forEach(k=>k.classList.toggle('arm',k===c));note('TAP AGAIN TO LET '+x.name.toUpperCase()+' GO');return}
+  ensure(x);note(`${x.name.toUpperCase()}: "${line(x,'bye')}"`);tone(523,0,.2,.08,'triangle');tone(392,.2,.3,.08,'triangle');
+  S.discharged=S.discharged||[];S.discharged.unshift({name:x.name,nick:x.nick,sp:x.sp,rank:rankOf(x.xp),missions:x.missions,date:Date.now()});
+  S.roster=S.roster.filter(k=>k.id!==x.id);if(S.sel===x.id)S.sel=null;save();speak()};
+$('c-skip').onclick=()=>{S.signal=null;save();blip();go('task')};
+$('c-next').onclick=()=>{const sg=S.signal;if(!sg){go('task');return}
+  if(askMode){askMode=false;sg.asked=true;sg.until=Date.now()+WINDOW;save();audio();startNoise();drawCamp();return}
+  if(sg.lost){S.signal=null;save();go('base');return}
+  const L=introLines();if(talkI<L.length){talkI++;speak();return}
+  if(recruiting()&&S.roster.length>=MAX){S.signal=null;save();note('THE NEW ONE WALKS AWAY');go('base');return}
+  const name=$('c-name').value.trim();if(!name){note('GIVE ME A NICKNAME');$('c-name').focus();return}
+  const id=S.nextId++,rec=recruiting();S.roster.push({id,name,full:sg.full,sp:sg.sp,coat:sg.coat,hue:sg.hue,trait:sg.trait,pers:sg.pers,tic:sg.tic,call:sg.call,catch:sg.catch,xp:0,missions:0,scars:0,toughUsed:false,medUntil:0,born:Date.now(),log:[],nick:null});
+  S.sel=id;S.signal=null;S.camped=true;save();$('c-name').value='';jingle();party(3);note(name.toUpperCase()+' ENLISTED');go(rec?'base':'task')};
 $('c-name').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('c-next').click()}});
+
+/* ---------- lock screen: the whole mission baked into one audio track (same trick as Sit) ---------- */
+const MSR=22050,MBR=[0,8,16,24,32,40,48,56,64,80,96,112,128,144,160],MSRS=[22050,24000,16000];
+function frames(u){const f=[];let i=0;while(i+4<=u.length){if(u[i]===255&&(u[i+1]&0xE0)===0xE0){const br=MBR[u[i+2]>>4],sr=MSRS[(u[i+2]>>2)&3],len=Math.floor(72000*br/sr)+((u[i+2]>>1)&1);if(!br||!sr||!len)break;f.push(i);i+=len}else i++}return f}
+function enc(pcm,kbps){const e=new lamejs.Mp3Encoder(1,MSR,kbps),out=[];for(let i=0;i<pcm.length;i+=1152){const b=e.encodeBuffer(pcm.subarray(i,i+1152));if(b.length)out.push(b)}const fl=e.flush();if(fl.length)out.push(fl);
+  const n=out.reduce((a,b)=>a+b.length,0),u=new Uint8Array(n);let o=0;out.forEach(b=>{u.set(b,o);o+=b.length});return{u,f:frames(u).length}}
+function synth(dur,fn){const n=Math.ceil(dur*MSR),p=new Int16Array(n);for(let i=0;i<n;i++)p[i]=Math.max(-32768,Math.min(32767,Math.round(fn(i/MSR)*32767)));return p}
+let clips=null;
+function prepClips(){if(clips||!window.lamejs)return;try{
+  const env=(t,d)=>Math.min(1,t/.005)*Math.exp(-t/d);
+  const sq=(f,t)=>Math.sin(2*Math.PI*f*t)>0?1:-1;
+  const alarm=synth(2.3,t=>{const k=Math.floor(t/.36),tt=t-k*.36;if(k>5||tt>.16)return 0;return .42*sq(k%2?740:988,tt)*Math.min(1,tt/.004)*Math.min(1,(.16-tt)/.01)});
+  const beat=synth(.55,t=>{const b=t0=>t>=t0?Math.sin(2*Math.PI*(110-50*(t-t0))*(t-t0))*env(t-t0,.07):0;return .85*(b(0)+.75*b(.22))});
+  const tick=synth(.07,t=>.35*Math.sin(2*Math.PI*1200*t)*Math.exp(-t/.015));
+  const knell=synth(2.6,t=>.5*Math.sin(2*Math.PI*196*t)*Math.exp(-t/.8)+.3*Math.sin(2*Math.PI*392*t)*Math.exp(-t/.5));
+  clips={alarm:enc(alarm,48),beat:enc(beat,32),tick:enc(tick,32),knell:enc(knell,48)};
+  const fr=new Uint8Array(26);fr.set([255,243,16,196]);const big=new Uint8Array(26*256);for(let i=0;i<256;i++)big.set(fr,i*26);clips.big={u:big,f:256};clips.small={u:fr,f:1};
+}catch(e){clips=null}}
+addEventListener('load',()=>setTimeout(prepClips,400));
+function buildTrack(m){prepClips();if(!clips)return null;
+  const end=(m.end-m.start)/1000,ge=(m.graceEnd-m.start)/1000,ev=[];
+  for(let k=10;k>=1;k--)if(end-k>0)ev.push([end-k,clips.tick]);
+  ev.push([end,clips.alarm]);for(let t=end+2.6;t<ge-1;t+=1.4)ev.push([t,clips.beat]);ev.push([ge,clips.knell]);
+  const parts=[],marks=[[0,0]];let samp=0,bytes=0;const add=b=>{parts.push(b.u);samp+=b.f*576;bytes+=b.u.length;marks.push([samp,bytes])};
+  ev.forEach(([t,c])=>{const T=Math.floor(t*MSR);while(samp+clips.big.f*576<=T)add(clips.big);while(samp+576<=T)add(clips.small);add(c)});
+  const nf=Math.round(samp/576),first=parts[0],h=frames(first)[0]||0;
+  const x=new Uint8Array(208);x.set(first.subarray(h,h+4));x[2]=(x[2]&0x0D)|(8<<4);x[3]=(x[3]&0x3F)|0xC0;x.set([88,105,110,103],13);x[20]=7;
+  const dv=new DataView(x.buffer);dv.setUint32(21,nf);dv.setUint32(25,bytes+208);
+  for(let i=0;i<100;i++){const ts=samp*i/100;let k=0;while(k<marks.length-1&&marks[k+1][0]<=ts)k++;x[29+i]=Math.min(255,Math.floor((208+marks[k][1])/(bytes+208)*256))}
+  return URL.createObjectURL(new Blob([x,...parts],{type:'audio/mpeg'}))}
+const track=new Audio();track.preload='auto';track.setAttribute('playsinline','');let trackURL=null;
+const trackOn=()=>!!trackURL&&!track.paused;
+function startTrack(m){stopTrack();if(!soundOn)return;try{const u=buildTrack(m);if(!u)return;trackURL=u;track.src=u;const p=track.play();if(p&&p.catch)p.catch(()=>stopTrack());
+  if('mediaSession' in navigator){const s=soldier(m.sid);navigator.mediaSession.metadata=new MediaMetadata({title:'RUSH: '+m.task,artist:s?dname(s):'Rush',album:'Adders OS',artwork:[{src:'img/icon-180.png',sizes:'180x180',type:'image/png'}]})}}catch{stopTrack()}}
+function stopTrack(){try{track.pause()}catch{}if(trackURL){URL.revokeObjectURL(trackURL);trackURL=null;track.removeAttribute('src')}}
 
 /* ---------- supply drop ---------- */
 function makeDrop(){const taken=S.roster.map(s=>s.sp);let pool=Object.keys(SPECIES).filter(k=>!taken.includes(k));
@@ -986,7 +1060,7 @@ function tick(){
   const m=S.mission,now=Date.now(),s=soldier(m.sid);
   if(now>=m.graceEnd){endMission(true);return}
   if(now>=m.end){
-    if(!root.dataset.bleed){root.dataset.bleed='1';if(!m.warned){m.warned=true;save();alarm();buzz([300,150,300])}}
+    if(!root.dataset.bleed){root.dataset.bleed='1';if(!m.warned){m.warned=true;save();if(!trackOn())alarm();buzz([300,150,300])}}
     const left=(m.graceEnd-now)/1000;
     arc($('l-arc'),$('l-knob'),left/((m.graceEnd-m.end)/1000));
     $('l-time').textContent=`${pad(Math.floor(left/60))}:${pad(Math.floor(left%60))}`;
@@ -994,7 +1068,7 @@ function tick(){
     $('l-cap').textContent='GRACE';
     $('l-done').textContent='GOT IT DONE';$('l-end').textContent='END';
     if(phaseSaid!=='bleed'){phaseSaid='bleed';say('bleed')}
-    if(now-lastThump>1100&&document.visibilityState==='visible'){lastThump=now;thump()}
+    if(now-lastThump>1100&&document.visibilityState==='visible'&&!trackOn()){lastThump=now;thump()}
   }else{
     delete root.dataset.bleed;
     const left=(m.end-now)/1000,total=m.mins*60,frac=1-left/total;
@@ -1002,7 +1076,7 @@ function tick(){
     $('l-time').textContent=`${pad(Math.floor(left/60))}:${pad(Math.floor(left%60))}`;
     $('l-wname').innerHTML='<span class="dot"></span>Live · T-minus';
     const urgent=left<=Math.min(300,total*.2);if(urgent)root.dataset.urgent='1';else delete root.dataset.urgent;
-    const sec=Math.ceil(left);if(left<=60&&sec!==lastTick&&document.visibilityState==='visible'){lastTick=sec;tone(sec<=10?1200:900,0,.03,sec<=10?.09:.05)}
+    const sec=Math.ceil(left);if(left<=60&&sec!==lastTick&&document.visibilityState==='visible'&&!(trackOn()&&left<=10)){lastTick=sec;tone(sec<=10?1200:900,0,.03,sec<=10?.09:.05)}
     $('l-cap').textContent=`then ${grace(s)} min grace`;
     $('l-done').textContent='MISSION DONE';$('l-end').textContent='ABORT';
     const ph=left<Math.min(300,total*.2)?'late':frac>=.5?'mid':'start';
@@ -1027,11 +1101,11 @@ async function win(late){
   if(s.trait==='glutton'){rows.push(['Glutton: double XP',total]);total*=2}
   const xp0=s.xp,before=rankOf(xp0);s.xp+=total;s.missions++;const after=rankOf(s.xp);
   ensure(s);s.log.push({t:m.task,d:now,m:m.mins,r:late?'late':'win',st:m.micro.length,left:late?0:Math.max(0,(m.end-now)/(m.mins*60000))});
-  if(after>=2&&!s.nick){s.nick=nickFor(s);s._newNick=true}
+  if(after>=2&&!s.nick&&!s.full){s.nick=nickFor(s);s._newNick=true}
   const unlockedSlot=UNLOCK.includes(S.won+1);
   /* 20% a win; your first win always has one, and never more than 4 wins in a row without */
-  if(!S.encSeen||(S.dry||0)>=4||Math.random()<.2){S.encounter=makeOne();S.encSeen=true;S.dry=0}else S.dry=(S.dry||0)+1;
-  S.won++;S.streak++;S.mission=null;save();sleepOK();
+  if(!S.encSeen||(S.dry||0)>=4||Math.random()<.2){S.signal=newSignal('recruit');S.encSeen=true;S.dry=0}else S.dry=(S.dry||0)+1;
+  S.won++;S.streak++;S.mission=null;save();sleepOK();stopTrack();
   /* staging */
   go('return');$('r-go').disabled=true;
   const st=$('r-stamp');st.textContent=late?'SAVED IN TIME':'MISSION COMPLETE';st.className='stamp'+(late?' late':'');st.style.visibility='hidden';
@@ -1050,8 +1124,8 @@ async function win(late){
   showXp(s.xp);
   $('r-pic').innerHTML=img(s);if(after>before){party(3);$('r-task').textContent='“'+line(s,'evolve')+'”'}
   $('r-go').disabled=false;
-  if(S.encounter){$('r-go').textContent='BACK TO BASE';$('r-go').dataset.next='enc'}
-  else if(unlockedSlot&&S.roster.length<cap()){await wait(600);note(`${S.won} WINS: NEW SLOT UNLOCKED`);$('r-go').textContent='OPEN SUPPLY DROP';$('r-go').dataset.next='drop'}
+  if(!S.signal&&unlockedSlot&&S.roster.length<MAX){S.signal=newSignal('recruit');save()}
+  if(S.signal){$('r-go').textContent='BACK TO BASE';$('r-go').dataset.next='camp'}
   else{$('r-go').textContent='BACK TO BASE';$('r-go').dataset.next='task'}
 }
 $('r-go').onclick=()=>go($('r-go').dataset.next||'task');
@@ -1081,7 +1155,7 @@ function evolve(s,from,to){return new Promise(async done=>{
 /* ---------- debrief: the honesty check ---------- */
 function endMission(timedOut){
   const m=S.mission,s=m&&soldier(m.sid);if(!s){S.mission=null;save();go('task');return}
-  m.over=true;save();sleepOK();
+  m.over=true;save();sleepOK();stopTrack();
   go('honest');
   $('h-sub').textContent=timedOut?'THE CLOCK WON':'MISSION ENDED';
   $('h-pic').innerHTML=img(s,{fallen:true,alt:s.name+', wounded'});
@@ -1121,7 +1195,7 @@ $('g-hold').addEventListener('pointerdown',e=>{e.preventDefault();audio();try{$(
 ['pointerup','pointercancel','pointerleave'].forEach(ev=>$('g-hold').addEventListener(ev,()=>{if(holdT){cancelAnimationFrame(holdT);holdT=null;const from=holdP,t0=Date.now();(function back(){const p=Math.max(0,from-(Date.now()-t0)/400);setHold(p);if(p>0&&!holdT)requestAnimationFrame(back)})()}}));
 $('g-hold').addEventListener('contextmenu',e=>e.preventDefault());
 function letGo(){if(devPreview){devPreview=false;dirge();go('task');return}const m=S.mission,s=m&&soldier(m.sid);if(!s)return;
-  S.fallen.unshift({name:s.name,nick:s.nick,sp:s.sp,rank:rankOf(s.xp),missions:s.missions,trait:s.trait,task:m.task,date:Date.now(),born:s.born,last:s.lastWords,log:(s.log||[]).slice(-30)});
+  S.fallen.unshift({name:s.full?dname(s):s.name,nick:s.full?null:s.nick,sp:s.sp,rank:rankOf(s.xp),missions:s.missions,trait:s.trait,task:m.task,date:Date.now(),born:s.born,last:s.lastWords,log:(s.log||[]).slice(-30)});
   S.roster=S.roster.filter(x=>x.id!==s.id);S.mission=null;S.lost++;S.streak=0;S.sel=null;save();dirge();go('memorial')}
 
 /* ---------- memorial ---------- */
@@ -1179,7 +1253,7 @@ $('en-enlist').onclick=()=>{const e=S.encounter,name=$('en-name').value.trim();i
   S.sel=S.roster[S.roster.length-1].id;S.encounter=null;save();$('en-name').value='';jingle();note(name.toUpperCase()+' ENLISTED');go('base')};
 
 /* ---------- dev mode: pick any sprite and rank, preview evolutions ---------- */
-function devSoldier(){let s=soldier(S.sel)||S.roster[0];if(!s){s={id:S.nextId++,name:'Test',sp:'kitsune',coat:'Classic',hue:0,trait:'eager',xp:0,missions:0,scars:0,toughUsed:false,medUntil:0,born:Date.now()};S.roster.push(s);S.camped=true;S.drop=null}S.sel=s.id;return s}
+function devSoldier(){let s=soldier(S.sel)||S.roster[0];if(!s){s={id:S.nextId++,name:'Test',full:fullName(),sp:'kitsune',coat:'Classic',hue:0,trait:'eager',xp:0,missions:0,scars:0,toughUsed:false,medUntil:0,born:Date.now()};S.roster.push(s);S.camped=true;S.drop=null}S.sel=s.id;return s}
 function drawDev(){const s=devSoldier(),r=rankOf(s.xp);
   $('dv-who').textContent=`${s.name.toUpperCase()} · ${SPECIES[s.sp].toUpperCase()} · ${RANKS[r-1].toUpperCase()}`;
   $('dv-list').innerHTML=Object.keys(SPECIES).map(sp=>`<div class="devrow"><b>${SPECIES[sp]}</b>${[1,2,3,4,5].map(k=>`<button data-sp="${sp}" data-r="${k}" aria-pressed="${s.sp===sp&&r===k}" aria-label="${SPECIES[sp]} ${RANKS[k-1]}"><img class="spr" src="img/${sp}_${k}.webp" alt=""></button>`).join('')}<button data-sp="${sp}" data-r="0" aria-label="${SPECIES[sp]} fallen preview"><img class="spr" src="img/${sp}_fallen.webp" alt=""></button></div>`).join('');
@@ -1190,7 +1264,7 @@ $('dv-list').onclick=e=>{const b=e.target.closest('button');if(!b)return;const s
   s.sp=b.dataset.sp;s.hue=0;s.coat='Classic';s.xp=XP_AT[r-1];save();blip();drawDev();if(cur==='squad')drawSquad()};
 $('dv-evo').onclick=async()=>{const s=devSoldier(),r=rankOf(s.xp),from=r<5?r:4,to=from+1;$('dev').classList.remove('on');await evolve(s,from,to);s.xp=Math.max(s.xp,XP_AT[to-1]);save();if(cur==='squad')drawSquad();openDev()};
 $('dv-win').onclick=()=>{$('dev').classList.remove('on');party(4)};
-$('dv-enc').onclick=()=>{$('dev').classList.remove('on');devSoldier();S.encounter=makeOne();save();go('enc')};
+$('dv-enc').onclick=()=>{$('dev').classList.remove('on');devSoldier();startRecruit()};
 $('dv-close').onclick=()=>{$('dev').classList.remove('on');if(['camp','drop'].includes(cur)&&S.roster.length)go('task');else if(['task','time','squad'].includes(cur))go(cur)};
 $('dv-off').onclick=()=>{S.dev=false;save();$('devtag').hidden=true;$('dev').classList.remove('on');note('DEV MODE OFF')};
 $('dev').onclick=e=>{if(e.target===$('dev'))$('dv-close').click()};
@@ -1201,7 +1275,7 @@ if(S.dev)$('devtag').hidden=false;
 /* ---------- service record ---------- */
 const RES={win:'WIN',late:'CLOSE CALL',excuse:'EXCUSE',tough:'PULLED THROUGH'};
 function drawFile(){const s=soldier(S.sel);if(!s){go('task');return}ensure(s);const r=rankOf(s.xp),L=s.log||[];
-  $('f-pic').innerHTML=img(s);$('f-name').textContent=s.name;$('f-nick').textContent=s.nick?`"${s.nick}"`:'NO NICKNAME YET';
+  $('f-pic').innerHTML=img(s);$('f-name').textContent=s.full||s.name;$('f-nick').textContent=s.full?`"${s.name}"`:s.nick?`"${s.nick}"`:'NO NICKNAME YET';
   $('f-meta').textContent=`${RANKS[r-1]} ${SPECIES[s.sp]} · ${cap1(s.pers)} · ${TRAITS[s.trait].n}`;
   $('f-catch').textContent=tic(s,s.catch);
   $('f-won').textContent=s.missions;$('f-days').textContent=daysWith(s);$('f-close').textContent=L.filter(e=>e.r!=='win').length;
@@ -1213,8 +1287,9 @@ function drawFile(){const s=soldier(S.sel);if(!s){go('task');return}ensure(s);co
 /* ---------- boot ---------- */
 (function boot(){
   if(S.mission&&!soldier(S.mission.sid))S.mission=null;
+  if(S.encounter){S.signal=S.signal||newSignal('recruit');delete S.encounter}if(S.drop)S.drop=null;
   if(S.mission){if(S.mission.over||Date.now()>=S.mission.graceEnd)endMission(true);else go('live')}
-  else{if(S.won||S.fallen.length||S.roster.length)S.camped=true;go(S.encounter&&S.roster.length?'enc':S.roster.length?'base':(S.camped?'drop':'camp'))}
+  else{if(S.won||S.fallen.length||S.roster.length)S.camped=true;go(S.signal&&S.roster.length?'camp':S.roster.length?'base':'camp')}
 })();
 </script>
 </body>
