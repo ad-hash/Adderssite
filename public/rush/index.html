@@ -741,13 +741,14 @@ function ensure(s){if(!s.story)s.story=rollStory();if(!s.storySeen)s.storySeen=M
 const rankOf=xp=>{let r=1;XP_AT.forEach((v,i)=>{if(xp>=v)r=i+1});return r};
 const pct=xp=>{const r=rankOf(xp);return r>=5?100:Math.round((xp-XP_AT[r-1])/(XP_AT[r]-XP_AT[r-1])*100)};
 const SIZE=[70,79,87,94,100];
-/* coats: classic by default; rare 1 in 20, legendary 1 in 60. Only the body is recoloured, pre-rendered in img/coats */
+/* coats: half of recruits get a common colourway; rare 1 in 20, legendary 1 in 60. Only the body is recoloured, pre-rendered in img/coats */
+const COMMON={gorilla:['ginger','jet','sandy'],kitsune:['redfox','sand','arctic'],giraffe:['midnight','chestnut','blonde'],shoebill:['slate','mocha','dusk'],octopus:['coral','amber','cobalt'],bee:['frost','lime','rose'],jorts:['acidwash','rawindigo','pinkdenim'],vase:['imperialred','celadon','saffron']};
 const SPCOATS={kitsune:['shadow'],giraffe:['albino'],shoebill:['snowy','raven'],gorilla:['silverback'],octopus:['crimson','deepsea'],bee:['hornet'],jorts:['blackdenim'],vase:[]};
-const COATNAME={camo:'Camo',noir:'Noir',galaxy:'Galaxy',shadow:'Shadow',albino:'Albino',snowy:'Snowy',raven:'Raven',silverback:'Silverback',crimson:'Crimson',deepsea:'Deep Sea',hornet:'Hornet',blackdenim:'Black Denim'};
+const COATNAME={ginger:'Ginger',jet:'Jet',sandy:'Sandy',redfox:'Red Fox',sand:'Sand',arctic:'Arctic',midnight:'Midnight',chestnut:'Chestnut',blonde:'Blonde',slate:'Slate',mocha:'Mocha',dusk:'Dusk',coral:'Coral',amber:'Amber',cobalt:'Cobalt',frost:'Frost',lime:'Lime',rose:'Rose',acidwash:'Acid Wash',rawindigo:'Raw Indigo',pinkdenim:'Pink Denim',imperialred:'Imperial Red',celadon:'Celadon',saffron:'Saffron',camo:'Camo',noir:'Noir',galaxy:'Galaxy',shadow:'Shadow',albino:'Albino',snowy:'Snowy',raven:'Raven',silverback:'Silverback',crimson:'Crimson',deepsea:'Deep Sea',hornet:'Hornet',blackdenim:'Black Denim'};
 const LEGEND=['galaxy'],RARE=['camo','noir',...new Set(Object.values(SPCOATS).flat())];
-const coatsFor=sp=>['camo','noir',...(SPCOATS[sp]||[])];
+const coatsFor=sp=>[...(COMMON[sp]||[]),'camo','noir',...(SPCOATS[sp]||[])],rareFor=sp=>['camo','noir',...(SPCOATS[sp]||[])];
 const coatTier=c=>LEGEND.includes(c)?'LEGENDARY':RARE.includes(c)?'RARE':'';
-const rollCoat=sp=>{const r=Math.random();return r<1/60?'galaxy':r<1/60+1/20?pick(coatsFor(sp)):'classic'};
+const rollCoat=sp=>{const r=Math.random();return r<1/60?'galaxy':r<1/60+1/20?pick(rareFor(sp)):r<.55?pick(COMMON[sp]||['classic']):'classic'};
 const coatOf=s=>(s.coat==='galaxy'||coatsFor(s.sp).includes(s.coat))?s.coat:'classic';
 const coatLabel=c=>(COATNAME[c]||c).toUpperCase();
 const img=(s,o={})=>{const rk=o.rank||(o.fallen&&s.rank)||rankOf(s.xp||0),c=coatOf(s),src=o.fallen?`img/${s.sp}_fallen.webp`:c==='classic'?`img/${s.sp}_${rk}.webp`:`img/coats/${s.sp}_${rk}_${c}.webp`,sz=o.full?100:SIZE[rk-1]||100;
