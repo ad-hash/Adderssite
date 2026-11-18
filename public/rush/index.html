@@ -215,6 +215,9 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
 .cards.two{grid-template-columns:repeat(2,minmax(0,1fr));width:70%;align-self:center}
 .evo .say{position:relative;max-width:min(300px,80vw);border:2px solid #f2ede3;padding:6px 10px;font-size:14px;line-height:1.4;min-height:1.4em}
 .evo .say:empty{visibility:hidden}
+.evo .story{position:relative;max-width:min(320px,86vw);border:2px dashed #f2ede3;padding:8px 12px;display:flex;flex-direction:column;gap:4px;font-size:14px;line-height:1.45;animation:in .4s ease-out both}
+.evo .story b{font-family:var(--pixel);font-size:10px;letter-spacing:.14em;font-weight:400;color:var(--acc-hi)}
+.evo.lit .stage{width:min(240px,58vw)}
 /* base and break room */
 .zz{position:absolute;right:16%;top:6%;font-family:var(--pixel);color:var(--muted);pointer-events:none}
 .zz i{position:absolute;font-style:normal;font-size:20px;opacity:0;animation:zz 3s linear infinite}
@@ -549,6 +552,7 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
     <div class="head"><h1>Service record</h1><button class="lab" data-go="squad" style="color:var(--muted);padding:6px 0">&lt; BACK</button></div>
     <div class="fhead"><div class="pic alive" id="f-pic"></div><div class="finfo"><b id="f-name"></b><span class="nk" id="f-nick"></span><small id="f-meta"></small><q id="f-catch"></q></div></div>
     <div class="stats"><div class="stat"><b id="f-won">0</b><small>missions</small></div><div class="stat"><b id="f-days">0</b><small>days served</small></div><div class="stat"><b id="f-close">0</b><small>close calls</small></div></div>
+    <section class="win"><div class="bar"><span class="close"></span><span class="wname">Their story</span></div><div class="pane" id="f-story" style="gap:6px"></div></section>
     <section class="win grow"><div class="bar"><span class="close"></span><span class="wname">Missions</span></div><div class="pane flog" id="f-log"></div></section>
   </section>
 
@@ -613,6 +617,7 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
   <div class="stage"><div class="glow"></div><div class="fx" id="e-fx"></div><div class="pic" id="e-old"></div><div class="pic" id="e-new" hidden></div></div>
   <div class="perk" id="e-perk"></div>
   <div class="say" id="e-say"></div>
+  <div class="story" id="e-story" hidden><b id="e-slab"></b><span id="e-stxt"></span></div>
   <input class="field-in" id="e-nick" maxlength="18" autocomplete="off" enterkeyhint="done" aria-label="Nickname" hidden style="position:relative;width:min(300px,80vw);text-align:center;font-family:var(--pixel)">
   <button class="btn go" id="e-go">CONTINUE</button>
 </div>
@@ -730,7 +735,7 @@ function nickFor(s){const L=s.log||[];if(!L.length)return pick(['Ghost','Boots',
   if(late)return 'Photo Finish';if(avgM<=10)return 'Quickdraw';if(avgM>=45)return 'Marathon';if(avgSt>=3)return 'Checklist';if(early>=L.length*.6)return 'Early Bird';
   return {speedy:'Zoom',tough:'Iron',glutton:'Snacks',eager:'Keen'}[s.trait]||pick(['Ghost','Boots','Sparky','Ace','Tank'])}
 const dname=s=>{if(s.full){const [f,...l]=s.full.split(' ');return s.nick?`${f} "${s.nick}" ${l.join(' ')}`:s.full}return s.nick?`${s.name} "${s.nick}"`:s.name};
-function ensure(s){if(s.hue){s.hue=0;s.coat='classic'}if(s.coat!=='galaxy'&&!coatsFor(s.sp).includes(s.coat))s.coat='classic';if(!s.pers)s.pers=pick(PERS);if(!s.tic)s.tic=pick(TICS);if(!s.call)s.call=pick(CALLS);if(!s.catch)s.catch=makeCatch();if(!s.log)s.log=[];if(s.nick===undefined)s.nick=null;if(!s.born)s.born=Date.now()}
+function ensure(s){if(!s.story)s.story=rollStory();if(!s.storySeen)s.storySeen=Math.min(rankOf(s.xp||0),1);if(s.hue){s.hue=0;s.coat='classic'}if(s.coat!=='galaxy'&&!coatsFor(s.sp).includes(s.coat))s.coat='classic';if(!s.pers)s.pers=pick(PERS);if(!s.tic)s.tic=pick(TICS);if(!s.call)s.call=pick(CALLS);if(!s.catch)s.catch=makeCatch();if(!s.log)s.log=[];if(s.nick===undefined)s.nick=null;if(!s.born)s.born=Date.now()}
 
 
 const rankOf=xp=>{let r=1;XP_AT.forEach((v,i)=>{if(xp>=v)r=i+1});return r};
@@ -838,7 +843,8 @@ function drawSquad(){
   if(!S.draft.task.trim()){go('task');return}
   const s=pickSel(),out=isOut(s),n=S.roster.length,r=rankOf(s.xp),c=coatOf(s);
   $('b-pic').innerHTML=img(s);$('b-pic').style.opacity=out?.45:1;
-  $('b-say').textContent=S.away?tic(s,`You were gone ${S.away} days, ${s.call}.`):(Math.random()<.5&&S.draft.task?fill(s,pick(TASKLINES[s.pers]||TASKLINES.stoic),S.draft.task):(memory(s,S.draft.task)||line(s,'greet')));S.away=0;
+  const sq=Math.random()<.18?squadLine(s):null;
+  $('b-say').textContent=sq?sq:S.away?tic(s,`You were gone ${S.away} days, ${s.call}.`):(Math.random()<.5&&S.draft.task?fill(s,pick(TASKLINES[s.pers]||TASKLINES.stoic),S.draft.task):(memory(s,S.draft.task)||line(s,'greet')));S.away=0;
   $('b-name').textContent=dname(s);
   $('b-meta').textContent=(out?`MED BAY · back in ${hrs(s.medUntil-Date.now())}h · `:'')+`LV${r} ${RANKS[r-1]} · ${SPECIES[s.sp]} · ${TRAITS[s.trait].n} · ${cap1(s.pers)}`+(coatTier(c)?` · ★ ${coatLabel(c)}`:'');
   $('b-xp').style.width=pct(s.xp)+'%';
@@ -866,6 +872,17 @@ function drawSteps0(){$('t-steps').innerHTML=S.draft.steps.map((t,i)=>`<button c
 function addStep(){const v=$('t-step').value.trim();if(!v)return;if(S.draft.steps.length>=5){note('5 STEPS MAX');return}S.draft.task=$('m-task').value;S.draft.steps.push(v);save();$('t-step').value='';blip();drawSteps0()}
 $('t-add').onclick=addStep;$('t-step').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();addStep()}};
 $('t-steps').onclick=e=>{const b=e.target.closest('.step');if(b){S.draft.steps.splice(+b.dataset.i,1);save();drawSteps0()}};
+
+/* ---------- backstories: one piece unlocks at each promotion ---------- */
+const STORY={"job": ["Before this I was a dental receptionist.", "I used to sell mattresses. Nobody bought mattresses.", "I was a lollipop lady. Still miss the stick.", "Accountant. Seventeen years. Don't ask.", "I ran a crêpe van. Badly.", "I was a professional queue-stander.", "Night security at a sock factory.", "Wedding DJ. Same five songs every time.", "I was a mime. That's all I'm saying.", "Supply teacher. I fear nothing.", "I wrangled pigeons. For money.", "Broadband customer service. I've seen things.", "Driving instructor. Nerves of steel.", "I painted garden gnomes for a living.", "Tax inspector. People hated me. I loved it.", "Ice cream van. Only ever played one song."], "secret": ["I've never finished a book.", "I'm scared of ducks.", "I still can't tie my laces properly.", "I cried at a car advert last week.", "I have 4,000 unread emails.", "I don't actually like coffee.", "I've started eleven hobbies this year.", "I talk to my plants. They talk back.", "I once napped through an entire wedding.", "I keep a spare sandwich on me at all times.", "I googled 'how to focus' and got distracted reading it.", "I can't whistle.", "I've never seen the sea.", "My middle name is Sprout."], "why": ["My nan said I'd never amount to anything. Watch this, nan.", "I wanted to finish ONE thing. Just one.", "I lost a bet.", "Someone has to do the boring tasks.", "I heard there were snacks.", "I wanted to be useful to someone.", "My last squad fell to an inbox. Never again.", "You tuned in when nobody else did, {c}. I owe you.", "Free uniform.", "I was tired of only ever starting things.", "To prove a {species} can do admin."], "dream": ["When this is over: a small boat. No emails.", "A garden. Tomatoes. Silence.", "Open a café that only does toast.", "Retire somewhere with no wifi.", "Write that book. Actually finish it.", "Learn the saxophone. Badly, on purpose.", "Sleep for a whole week.", "Teach rookies like you taught me, {c}.", "See the sea. Finally.", "Win a pub quiz. Just once.", "Build a shed. A really good shed."]};
+const STORY_AT={2:'job',3:'secret',4:'why',5:'dream'},STORY_LABEL={job:'Old job',secret:'A secret',why:'Why they enlisted',dream:'The dream'};
+function rollStory(){return{job:pick(STORY.job),secret:pick(STORY.secret),why:pick(STORY.why),dream:pick(STORY.dream)}}
+const storyLine=(s,k)=>fill(s,s.story[k].replace(/\{species\}/g,SPECIES[s.sp].toLowerCase()));
+/* ---------- squad chatter: now and then they talk about each other ---------- */
+const DYN={"any": ["{o} has been showing off. Send me next.", "Don't tell {o}, but I'm the favourite.", "{o} snores. Just so you know.", "Me and {o} have a bet on this one.", "{o} says I can't do it. Watch me.", "Is {o} getting more missions than me?", "{o} owes me a tenner.", "I taught {o} everything they know."], "fallen": ["I still think about {o}.", "{o} would've smashed this.", "This one's for {o}.", "{o} saved me a seat. Not yet though."]};
+function squadLine(s){const others=S.roster.filter(x=>x.id!==s.id),gone=S.fallen.filter(f=>s.born&&f.date>s.born),opts=[];
+  others.forEach(o=>opts.push([pick(DYN.any),o.nick||o.name]));gone.forEach(f=>{if(!others.length||Math.random()<.35)opts.push([pick(DYN.fallen),f.name.split(' ')[0]])});
+  if(!opts.length)return null;const [t,o]=pick(opts);return fill(s,t.replace(/\{o\}/g,o))}
 
 /* ---------- base: enter the fray, or take a break ---------- */
 Object.assign(LINES.stoic,{grab:["Repositioning.","Noted.","Moving to new cover.","Steady hands, {c}."]});
@@ -895,7 +912,8 @@ function drawBase(){const s=S.roster.length?pickSel():null;if(!s){go('camp');ret
   const brk=!!S.breakSince;$('s-base').classList.add('resting');$('g2-pic').innerHTML=img(s);$('g2-pic').className='pic '+(brk?'sleep':'alive');
   $('g2-h').textContent=brk?'On break':'Base';$('g2-sub').textContent=brk?'AT EASE':dname(s).toUpperCase();
   $('g2-zz').hidden=!brk;$('g2-time').hidden=!brk;
-  $('g2-say').textContent=brk?line(s,'rest'):S.away?tic(s,`You were gone ${S.away} days, ${s.call}.`):(memory(s,'')||line(s,'greet'));S.away=0;
+  const sq2=!brk&&Math.random()<.18?squadLine(s):null;
+  $('g2-say').textContent=sq2?sq2:brk?line(s,'rest'):S.away?tic(s,`You were gone ${S.away} days, ${s.call}.`):(memory(s,'')||line(s,'greet'));S.away=0;
   $('g2-won').textContent=S.won;$('g2-streak').textContent=S.streak;$('g2-fallen').textContent=S.fallen.length;
   $('g2-go').textContent=brk?'BACK INTO THE FRAY':'ENTER THE FRAY';
   clearInterval(baseT);if(brk){const up=()=>{const t=Math.floor((Date.now()-S.breakSince)/1000);$('g2-time').textContent=`${pad(Math.floor(t/60))}:${pad(t%60)}`};up();baseT=setInterval(up,1000)}}
@@ -1189,7 +1207,7 @@ function arcs(el,ms,intensity=1){const svg=document.createElementNS('http://www.
 /* the evolution */
 function evolve(s,from,to){return new Promise(async done=>{
   const E=$('evo');E.className='evo on';
-  $('e-msg').textContent=`What? ${s.name.toUpperCase()} is evolving!`;$('e-perk').textContent='';$('e-say').textContent='';$('e-nick').hidden=true;
+  $('e-msg').textContent=`What? ${s.name.toUpperCase()} is evolving!`;$('e-perk').textContent='';$('e-say').textContent='';$('e-nick').hidden=true;$('e-story').hidden=true;
   $('e-old').innerHTML=img(s,{rank:from});$('e-new').innerHTML=img(s,{rank:to});
   $('e-old').hidden=false;$('e-new').hidden=true;
   await wait(1300);
@@ -1204,6 +1222,7 @@ function evolve(s,from,to){return new Promise(async done=>{
   const EL=['#f2fbff','#9fe3ff','#2f9cf0','#ffffff'];burst($('e-fx'),50,240,EL);setTimeout(()=>burst($('e-fx'),30,190,EL),350);
   $('e-msg').textContent=`${s.name.toUpperCase()} became a ${RANKS[to-1].toUpperCase()}!`;tone(1568,.4,.3,.08);
   setTimeout(()=>{$('e-say').textContent='“'+line(s,'evolve')+'”';tone(700,0,.06,.06);tone(900,.07,.06,.06)},900);
+  ensure(s);const sk=STORY_AT[to];if(sk&&(s.storySeen||1)<to){s.storySeen=to;save();setTimeout(()=>{$('e-slab').textContent='STORY UNLOCKED · '+STORY_LABEL[sk].toUpperCase();$('e-stxt').textContent='“'+storyLine(s,sk)+'”';$('e-story').hidden=false;tone(523,0,.12,.07,'triangle');tone(784,.12,.2,.07,'triangle')},2300)}
   if(s._nickPending){$('e-perk').textContent='Nickname earned. Keep it or write your own.';$('e-nick').value=s._nickPending;$('e-nick').hidden=false}
   else $('e-perk').textContent=PERKS[to-1];
   $('e-go').onclick=()=>{if(s._nickPending){s.nick=$('e-nick').value.trim()||s._nickPending;delete s._nickPending;save();note(dname(s).toUpperCase())}E.className='evo';done()};
@@ -1344,6 +1363,7 @@ function drawFile(){const s=soldier(S.sel);if(!s){go('task');return}ensure(s);co
   $('f-meta').textContent=`${RANKS[r-1]} ${SPECIES[s.sp]} · ${cap1(s.pers)} · ${TRAITS[s.trait].n}`+(coatTier(coatOf(s))?` · ${coatTier(coatOf(s))} ${coatLabel(coatOf(s))} COAT`:'');
   $('f-catch').textContent=tic(s,s.catch);
   $('f-won').textContent=s.missions;$('f-days').textContent=daysWith(s);$('f-close').textContent=L.filter(e=>e.r!=='win').length;
+  $('f-story').innerHTML=[2,3,4,5].map(rk=>{const k=STORY_AT[rk];return (s.storySeen||1)>=rk?`<div class="rec"><b>${STORY_LABEL[k].toUpperCase()}</b><span>“${esc(storyLine(s,k))}”</span></div>`:`<div class="rec" style="opacity:.55"><b>${STORY_LABEL[k].toUpperCase()}</b><span>▒▒▒▒▒▒ unlocks at ${RANKS[rk-1]}</span></div>`}).join('');
   $('f-log').innerHTML=L.length?L.slice().reverse().map(e=>`<div class="rec"><b>${fmtDate(e.d).toUpperCase()} · <span class="w">${RES[e.r]||'WIN'}</span> · ${e.m} MIN</b><span>${esc(e.t)}</span>${e.why?`<span>&quot;${esc(e.why)}&quot;</span>`:''}</div>`).join(''):'<p class="sub">No missions yet.</p>'}
 
 /* ---------- days away ---------- */
