@@ -195,6 +195,10 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
 .flog .rec b .w{color:var(--acc-ink)}
 .lastw{font-style:italic;font-size:13px;line-height:1.45}
 .plaque q{font-size:11px;font-style:italic;line-height:1.35}
+/* squad: arrows through your soldiers */
+.dots{display:flex;justify-content:center;gap:8px;flex-shrink:0}
+.dots i{width:10px;height:10px;border:2px solid var(--ink);background:var(--tile)}
+.dots i.on{background:var(--acc)}
 /* squad cards: all three, with level and attributes */
 .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;flex-shrink:0}
 .scard{border:2px solid var(--ink);background:var(--tile);padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;min-width:0}
@@ -441,11 +445,11 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
   <!-- 3: SQUAD -->
   <section class="screen" id="s-squad">
     <div class="crumbs"><span>1 ORDERS &gt;</span><span>2 CLOCK &gt;</span><b>3 SQUAD</b><span>&gt; 4 RUSH</span></div>
-    <div class="summary"><b id="q-task"></b><span id="q-min"></span></div>
-    <div class="hero2"><div class="pic alive" id="b-pic"></div><div class="sq-bub" id="b-say"></div></div>
-    <div class="cards" id="b-cards"></div>
-    <button class="lab" id="b-file" style="color:var(--acc-ink);padding:2px 0">SERVICE RECORD &gt;</button>
-    <p class="lab" id="b-risk" style="text-align:center;color:var(--acc-ink)"></p>
+    <div class="hero2"><button class="arr" id="b-prev" aria-label="Previous soldier">&lt;</button><div class="pic alive" id="b-pic"></div><button class="arr" id="b-next" aria-label="Next soldier">&gt;</button><div class="sq-bub" id="b-say"></div></div>
+    <div class="dots" id="b-dots" aria-hidden="true"></div>
+    <button class="who" id="b-file" style="grid-template-columns:1fr" aria-label="Open service record">
+      <span class="mid"><b id="b-name"></b><small id="b-meta"></small><span class="xp" style="display:block"><i id="b-xp"></i></span><span class="more">SERVICE RECORD &gt;</span></span>
+    </button>
     <div class="navrow"><button class="btn" data-go="time">BACK</button><button class="btn go" id="b-go">RUSH!</button></div>
   </section>
 
@@ -832,17 +836,20 @@ function cardHTML(x,pressed,extra=''){const r=rankOf(x.xp);ensure(x);
   return `<button class="scard${isOut(x)?' out':''}" data-id="${x.id}" aria-pressed="${pressed}" ${extra}><span class="pic">${img(x)}</span><b>${esc(x.name)}</b><span class="lv">LV${r} ${RANKS[r-1].toUpperCase()}</span><small>${SPECIES[x.sp]} · ${TRAITS[x.trait].n}</small><small>${cap1(x.pers)}${x.nick?' · "'+esc(x.nick)+'"':''}</small>${coatTier(coatOf(x))?`<small class="rare">★ ${coatLabel(coatOf(x))}</small>`:''}<span class="xp"><i style="width:${pct(x.xp)}%"></i></span>${isOut(x)?'<small>MED BAY</small>':''}</button>`}
 function drawSquad(){
   if(!S.draft.task.trim()){go('task');return}
-  const s=pickSel(),out=isOut(s),n=S.roster.length;
-  $('q-task').textContent=S.draft.task;$('q-min').textContent=`${S.mins} min`;
+  const s=pickSel(),out=isOut(s),n=S.roster.length,r=rankOf(s.xp),c=coatOf(s);
   $('b-pic').innerHTML=img(s);$('b-pic').style.opacity=out?.45:1;
   $('b-say').textContent=S.away?tic(s,`You were gone ${S.away} days, ${s.call}.`):(Math.random()<.5&&S.draft.task?fill(s,pick(TASKLINES[s.pers]||TASKLINES.stoic),S.draft.task):(memory(s,S.draft.task)||line(s,'greet')));S.away=0;
-  $('b-cards').className='cards'+(n===1?' one':n===2?' two':'');
-  $('b-cards').innerHTML=S.roster.map(x=>cardHTML(x,x.id===s.id)).join('');
-  $('b-risk').textContent=out?'MED BAY':`FAIL AND ${s.name.toUpperCase()} DIES`;
+  $('b-name').textContent=dname(s);
+  $('b-meta').textContent=(out?`MED BAY · back in ${hrs(s.medUntil-Date.now())}h · `:'')+`LV${r} ${RANKS[r-1]} · ${SPECIES[s.sp]} · ${TRAITS[s.trait].n} · ${cap1(s.pers)}`+(coatTier(c)?` · ★ ${coatLabel(c)}`:'');
+  $('b-xp').style.width=pct(s.xp)+'%';
+  $('b-prev').style.visibility=$('b-next').style.visibility=n>1?'visible':'hidden';
+  $('b-dots').innerHTML=n>1?S.roster.map(x=>`<i class="${x.id===s.id?'on':''}"></i>`).join(''):'';
   $('b-go').textContent=out?'IN MED BAY':'RUSH!';$('b-go').disabled=out;
 }
-$('b-cards').onclick=e=>{const c=e.target.closest('.scard');if(!c)return;const id=+c.dataset.id;if(id===S.sel){blip();go('file');return}S.sel=id;save();blip();drawSquad();act($('b-pic'),'a-hop')};
+function cycle(d){const i=S.roster.findIndex(x=>x.id===S.sel);S.sel=S.roster[(i+d+S.roster.length)%S.roster.length].id;save();blip();drawSquad();act($('b-pic'),'a-hop')}
+$('b-prev').onclick=()=>cycle(-1);$('b-next').onclick=()=>cycle(1);
 $('b-file').onclick=()=>{blip();go('file')};
+{let sx=null;$('b-pic').addEventListener('pointerdown',e=>{sx=e.clientX});$('b-pic').addEventListener('pointerup',e=>{if(sx!==null&&Math.abs(e.clientX-sx)>40&&S.roster.length>1)cycle(e.clientX<sx?1:-1);sx=null})}
 $('b-go').onclick=()=>{
   const task=S.draft.task.trim(),s=soldier(S.sel);if(!task||!s)return;
   if(isOut(s))return;
