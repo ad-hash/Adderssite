@@ -589,7 +589,7 @@ textarea.task-in{font-size:20px;font-weight:700;line-height:1.35;padding:12px;mi
       <div class="pane" id="w-dis"></div></section>
     <section class="win" id="w-recwin"><div class="bar"><span class="close"></span><span class="wname">On the record</span></div>
       <div class="pane" id="w-rec"></div></section>
-    <button class="btn small" id="w-reset">RESET EVERYTHING</button>
+    <button class="hold" id="w-reset" style="height:52px;font-size:12px"><i id="w-fill"></i><span>HOLD TO RESET EVERYTHING</span></button>
   </section>
 </main>
 </div>
@@ -1264,9 +1264,15 @@ function drawMemorial(){
   $('w-recwin').hidden=!S.record.length;
   $('w-rec').innerHTML=S.record.map(r=>`<div class="rec"><b>${esc(r.name.toUpperCase())} · ${fmtDate(r.date)} · ${r.from.toUpperCase()} &gt; ${r.to.toUpperCase()}</b><span>Mission: ${esc(r.task)}</span><span>&quot;${esc(r.why)}&quot;</span></div>`).join('');
 }
-let resetArmed=0;
-$('w-reset').onclick=()=>{if(Date.now()-resetArmed>3000){resetArmed=Date.now();note('TAP AGAIN TO WIPE EVERYTHING');return}
-  S={roster:[],fallen:[],record:[],drop:null,signal:null,mission:null,won:0,streak:0,lost:0,nextId:1,sel:null,mins:25,draft:{task:'',steps:[]}};save();go('camp')};
+/* reset: hold for 3 seconds, let go early and nothing happens */
+{const btn=$('w-reset'),fill=$('w-fill');let t0=0,raf=null;
+  const set=p=>fill.style.width=(p*100)+'%';
+  const loop=()=>{const p=Math.min(1,(Date.now()-t0)/3000);set(p);if(p>=1){raf=null;set(0);
+      S={roster:[],fallen:[],record:[],drop:null,signal:null,mission:null,won:0,streak:0,lost:0,nextId:1,sel:null,mins:25,draft:{task:'',steps:[]}};save();dirge();note('EVERYTHING RESET');go('camp');return}
+    if(Math.floor(p*6)!==Math.floor((p-.02)*6))tone(200+p*400,0,.05,.06);raf=requestAnimationFrame(loop)};
+  btn.addEventListener('pointerdown',e=>{e.preventDefault();audio();try{btn.setPointerCapture(e.pointerId)}catch{}t0=Date.now();if(!raf)raf=requestAnimationFrame(loop)});
+  ['pointerup','pointercancel','pointerleave'].forEach(ev=>btn.addEventListener(ev,()=>{if(raf){cancelAnimationFrame(raf);raf=null;set(0)}}));
+  btn.addEventListener('contextmenu',e=>e.preventDefault())}
 
 /* ---------- encounters: 20% chance after a win; you only see who it was if it gets away ---------- */
 function makeOne(){const taken=S.roster.map(s=>s.sp),pool=Object.keys(SPECIES).filter(k=>!taken.includes(k)),c=pick(COATS);
