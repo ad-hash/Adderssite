@@ -938,6 +938,8 @@ const strength=()=>{const d=Math.abs(tune-near().f),cd=Math.min(d,1-d);return Ma
 function navBtns(skip,next){$('c-skip').hidden=!skip;if(skip)$('c-skip').textContent=skip;$('c-next').textContent=next;$('c-nav').style.gridTemplateColumns=skip?'':'1fr'}
 function drawCamp(){
   if(!S.signal){if(S.roster.length){go('task');return}S.signal=newSignal('first');save()}
+  /* a first-contact signal saved before the three-signal update: replace it */
+  if(S.signal.mode==='first'&&!S.signal.options&&!S.signal.locked){S.signal=newSignal('first');save()}
   const sg=S.signal;locked=false;lockSince=0;talkI=0;askMode=false;
   $('c-talk').hidden=true;$('c-namebox').hidden=true;$('c-full').hidden=true;$('c-bars').hidden=false;$('c-msg').hidden=false;$('c-dial').classList.add('drag');
   $('c-h').textContent=recruiting()?'Faint signal':'Incoming signal';shownOpt=null;$('c-pic').className='pic';$('c-pic').innerHTML=img(near(),{rank:1,alt:'A figure in the static'});
