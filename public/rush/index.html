@@ -704,7 +704,10 @@ let soundOn=store.get('sound',true);
 function drawSnd(){$('sndg').innerHTML='<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/>'+(soundOn?'<path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>':'<path d="M16 9.5l5 5M21 9.5l-5 5"/>')}
 drawSnd();$('snd').onclick=()=>{soundOn=!soundOn;store.set('sound',soundOn);drawSnd();note(soundOn?'SOUND ON':'SOUND OFF');if(soundOn){audio();blip()}};
 let ac;
-function audio(){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume()}catch{}}
+/* during a mission the lock-screen track owns the audio; Web Audio stays asleep so Safari keeps the track in the Dynamic Island */
+const quietWA=()=>cur==='live'&&typeof trackOn==='function'&&trackOn();
+function audio(){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(quietWA())return;if(ac.state==='suspended')ac.resume()}catch{}}
+function hushWA(){try{if(ac&&quietWA()&&ac.state==='running')ac.suspend()}catch{}}
 function tone(f,at,dur,g=.16,type='square',f2){if(!soundOn||!ac)return;try{const t=ac.currentTime+at,o=ac.createOscillator(),v=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+dur);v.gain.setValueAtTime(0,t);v.gain.linearRampToValueAtTime(g,t+.01);v.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(v).connect(ac.destination);o.start(t);o.stop(t+dur+.05)}catch{}}
 function noise(at,dur,g=.25){if(!soundOn||!ac)return;try{const n=ac.sampleRate*dur,b=ac.createBuffer(1,n,ac.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n)**2;const s=ac.createBufferSource(),v=ac.createGain();s.buffer=b;v.gain.value=g;s.connect(v).connect(ac.destination);s.start(ac.currentTime+at)}catch{}}
 const blip=(f=880)=>tone(f,0,.07,.07);
@@ -918,7 +921,7 @@ function rushNow(){
   if(isOut(s))return;
   const now=Date.now(),end=now+S.mins*60000;
   S.mission={task,mins:S.mins,micro:S.draft.steps.map(t=>({t,done:false})),sid:s.id,start:now,end,graceEnd:end+grace(s)*60000,warned:false};
-  S.draft={task:'',steps:[]};save();audio();startTrack(S.mission);countdown().then(()=>go('live'));
+  S.draft={task:'',steps:[]};save();audio();startTrack(S.mission);countdown().then(()=>{go('live');setTimeout(hushWA,500)});
 }
 $('b-go').onclick=rushNow;
 $('t-rush').onclick=()=>{S.draft.task=$('m-task').value.trim();save();if(!S.draft.task){note('NO ORDERS, NO MISSION');$('m-task').focus();return}$('m-task').blur();if(!pickSel0()){note('WHOLE SQUAD IN MED BAY');return}rushNow()};
